@@ -39,6 +39,11 @@ pip install -r requirements.txt
 # create tables (or import your data dump instead)
 python -c "import database, models; database.Base.metadata.create_all(bind=database.engine)"
 
+# load the complete seed data (6 categories, 29 programs, 12 domains,
+# 106 skills, 39 careers, 278 skill requirements) — MySQL Workbench:
+# File > Open SQL Script > backend/seed_data.sql > run
+# (or: mysql -u root -p ai_skill_gap < seed_data.sql)
+
 # run the API
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
