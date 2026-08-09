@@ -131,7 +131,7 @@ Removing dead deps shrinks `package.json`, install time, and bundle; oxlint then
 
 ### 🚀 P1 — Short-term · 2–5 days · biggest quality leap
 
-1. **Split `App.jsx` into components** (see structure below) and move each `useEffect` fetch into a small `useFetch`/custom hook or **TanStack Query**. You instantly get caching, retry, and `isPending/isError` states for free.
+1. ✅ **Split `App.jsx` into components** (see structure below) and move each `useEffect` fetch into a small custom hook — **done**: `src/hooks/useInitialData.js`, `useCareers.js`, `useDomainCareerSkills.js`, `useCareerSkills.js` + pure scoring in `src/lib/scoring.js`. (TanStack Query still optional later.)
 2. **Stepper UI** — convert the 4 cards into a real progress stepper (1 Education → 2 Domain → 3 Career → 4 Skills), auto-advance, and show which steps are done.
 3. **Persistence**:
    - `localStorage` auto-save of selections + skill levels (restore on reload).
@@ -159,6 +159,8 @@ Removing dead deps shrinks `package.json`, install time, and bundle; oxlint then
 ---
 
 ## 5. Suggested file structure after refactor
+
+> ✅ **P1a status (2026-08-09): implemented.** `App.jsx` (was 1,541 lines) is now a ~280-line container; fetching lives in `src/hooks/*`, scoring math in `src/lib/scoring.js` (pure, testable), and UI in `src/components/**`. The tree below matches the actual code (layout/ui/assessment/results/recommendations).
 
 ```
 frontend/src/
