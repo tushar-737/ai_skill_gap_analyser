@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import "./App.css";
 
@@ -7,13 +7,19 @@ import { useCareers } from "./hooks/useCareers";
 import { useDomainCareerSkills } from "./hooks/useDomainCareerSkills";
 import { useCareerSkills } from "./hooks/useCareerSkills";
 
-import { computeCareerRecommendations, computeResults } from "./lib/scoring";
+import {
+    computeCareerRecommendations,
+    computeResults,
+} from "./lib/scoring";
+import { decodeShareState, encodeShareState, copyText } from "./lib/share";
+import { loadState, saveState } from "./lib/storage";
 
 import Header from "./components/layout/Header";
 import Hero from "./components/layout/Hero";
 import Footer from "./components/layout/Footer";
 import LoadingScreen from "./components/ui/LoadingScreen";
 import ErrorBanner from "./components/ui/ErrorBanner";
+import Stepper from "./components/assessment/Stepper";
 import EducationStep from "./components/assessment/EducationStep";
 import DomainStep from "./components/assessment/DomainStep";
 import CareerStep from "./components/assessment/CareerStep";
@@ -44,7 +50,10 @@ function App() {
     // =====================================================
 
     const { education, domains, loading } = useInitialData(setError);
-    const { careers, loading: loadingCareers } = useCareers(selectedDomain, setError);
+    const { careers, loading: loadingCareers } = useCareers(
+        selectedDomain,
+        setError
+    );
     const { domainCareerSkills, loading: loadingRecommendations } =
         useDomainCareerSkills(selectedDomain);
     const { requiredSkills, loading: loadingSkills } = useCareerSkills(
@@ -53,8 +62,67 @@ function App() {
     );
 
     // =====================================================
-    // RESET SKILL LEVELS WHEN THE TARGET CAREER CHANGES
+    // RESTORE (share link first, then saved state)
     // =====================================================
+    //
+    // Skill levels for the restored career are held in a ref
+    // and applied once the career's skills finish loading
+    // (the effect below consumes it), so they aren't reset.
+
+    const pendingLevelsRef = useRef(null);
+
+    useEffect(() => {
+        const shared = decodeShareState(window.location.hash);
+
+        if (shared) {
+            pendingLevelsRef.current = {
+                c: String(shared.c || ""),
+                l: shared.l || {},
+                showResults: true,
+            };
+
+            setSelectedEducation(String(shared.e || ""));
+            setSelectedDomain(String(shared.d || ""));
+            setSelectedCareer(String(shared.c || ""));
+            return;
+        }
+
+        const saved = loadState();
+
+        if (saved && saved.c) {
+            pendingLevelsRef.current = {
+                c: String(saved.c),
+                l: saved.l || {},
+                showResults: Boolean(saved.r),
+            };
+
+            setSelectedEducation(String(saved.e || ""));
+            setSelectedDomain(String(saved.d || ""));
+            setSelectedCareer(String(saved.c || ""));
+        }
+    }, []);
+
+    // =====================================================
+    // PERSIST SELECTIONS BETWEEN VISITS
+    // =====================================================
+
+    useEffect(() => {
+        saveState({
+            e: selectedEducation,
+            d: selectedDomain,
+            c: selectedCareer,
+            l: skillLevels,
+            r: showResults,
+        });
+    }, [selectedEducation, selectedDomain, selectedCareer, skillLevels, showResults]);
+
+    // =====================================================
+    // APPLY SKILL LEVELS WHEN THE TARGET CAREER CHANGES
+    // =====================================================
+    //
+    // Normal career change → all levels start at 0.
+    // Restored state (share link / saved visit) → levels
+    // from the payload are applied once skills load.
 
     useEffect(() => {
         if (!selectedCareer) {
@@ -62,27 +130,54 @@ function App() {
             return;
         }
 
+        if (requiredSkills.length === 0) return;
+
+        const pending = pendingLevelsRef.current;
+        const base =
+            pending && String(pending.c) === String(selectedCareer)
+                ? pending.l
+                : {};
+
         const initialLevels = {};
 
         requiredSkills.forEach((skill) => {
-            initialLevels[skill.skill_id] = 0;
+            initialLevels[skill.skill_id] =
+                Number(base[skill.skill_id]) || 0;
         });
 
         setSkillLevels(initialLevels);
-        setShowResults(false);
+        pendingLevelsRef.current = null;
+
+        if (pending && pending.showResults) {
+            setShowResults(true);
+        } else {
+            setShowResults(false);
+        }
     }, [selectedCareer, requiredSkills]);
 
     // =====================================================
     // HANDLERS
     // =====================================================
 
+    function clearShareHash() {
+        if (window.location.hash.startsWith("#/share/")) {
+            window.history.replaceState(
+                null,
+                "",
+                window.location.pathname + window.location.search
+            );
+        }
+    }
+
     function handleEducationChange(value) {
         setFormError("");
+        clearShareHash();
         setSelectedEducation(value);
     }
 
     function handleDomainChange(value) {
         setFormError("");
+        clearShareHash();
         setSelectedDomain(value);
 
         // Career-dependent state is no longer valid
@@ -93,11 +188,14 @@ function App() {
 
     function handleCareerChange(value) {
         setFormError("");
+        clearShareHash();
         setSelectedCareer(value);
         setShowResults(false);
     }
 
     function handleSkillChange(skillId, value) {
+        setFormError("");
+        clearShareHash();
         setSkillLevels((previous) => ({
             ...previous,
             [skillId]: Number(value),
@@ -138,6 +236,23 @@ function App() {
         }, 100);
     }
 
+    async function handleCopyShareLink() {
+        const payload = {
+            e: selectedEducation,
+            d: selectedDomain,
+            c: selectedCareer,
+            l: skillLevels,
+        };
+
+        const url =
+            window.location.origin +
+            window.location.pathname +
+            "#/share/" +
+            encodeShareState(payload);
+
+        return copyText(url);
+    }
+
     // =====================================================
     // COMPUTED RESULTS (pure functions from lib/scoring.js)
     // =====================================================
@@ -158,8 +273,23 @@ function App() {
     );
 
     const selectedCareerName = careers.find(
-        (career) => String(career.id) === String(selectedCareer)
+        (career) =>
+            String(career.id) === String(selectedCareer)
     )?.name;
+
+    // =====================================================
+    // STEPPER STATE
+    // =====================================================
+
+    const activeStep = !selectedEducation
+        ? 0
+        : !selectedDomain
+          ? 1
+          : !selectedCareer
+            ? 2
+            : showResults
+              ? 4
+              : 3;
 
     // =====================================================
     // LOADING SCREEN
@@ -189,6 +319,8 @@ function App() {
                 id="main-content"
                 className="assessment-container"
             >
+                <Stepper activeStep={activeStep} />
+
                 {/* =========================================
                     ERROR MESSAGES
                 ========================================= */}
@@ -242,6 +374,7 @@ function App() {
                     <ResultsSection
                         results={results}
                         careerName={selectedCareerName}
+                        onCopyShareLink={handleCopyShareLink}
                     />
                 )}
 

@@ -1,4 +1,7 @@
-// PRIORITY LEARNING — top 5 skill gaps to focus on first
+import { getLearningLinks } from "../../lib/resources";
+
+// PRIORITY LEARNING — top 5 skill gaps to focus on first,
+// each with curated learning resources.
 
 export default function PriorityList({ skills }) {
     if (skills.length === 0) return null;
@@ -41,6 +44,22 @@ export default function PriorityList({ skills }) {
                                 Required:{" "}
                                 {skill.required_level}%
                             </small>
+
+                            <div className="learn-links">
+                                {getLearningLinks(
+                                    skill.skill
+                                ).map((link) => (
+                                    <a
+                                        key={link.url}
+                                        className="learn-link"
+                                        href={link.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        📚 {link.label}
+                                    </a>
+                                ))}
+                            </div>
                         </div>
 
                         <span className="priority-gap">

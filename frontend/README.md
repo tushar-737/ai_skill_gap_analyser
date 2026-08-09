@@ -1,16 +1,56 @@
-# React + Vite
+# AI Skill Gap Analyzer — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React 19 + Vite 8 + Tailwind v4. The assessment wizard, career analysis, and
+recommendation UI.
 
-Currently, two official plugins are available:
+## Scripts
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Command | What it does |
+|---|---|
+| `npm run dev` | dev server (port 5173, proxies `/api` → `http://127.0.0.1:8000`) |
+| `npm run build` | production build → `dist/` |
+| `npm run lint` | oxlint |
+| `npm test` | Vitest unit tests |
+| `npm run preview` | preview the production build (port 4173) |
 
-## React Compiler
+## Environment
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Variable | Purpose |
+|---|---|
+| `VITE_API_URL` | Optional. Absolute base URL for the API. Leave empty to use the Vite proxy (`/api`). See `.env.example`. |
 
-## Expanding the Oxlint configuration
+## Structure
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+```
+src/
+├── api/api.js               # fetch wrapper + endpoint functions
+├── hooks/                   # data-fetching hooks (per resource)
+│   ├── useInitialData.js    # education programs + domains
+│   ├── useCareers.js        # careers by domain
+│   ├── useDomainCareerSkills.js
+│   └── useCareerSkills.js   # required skills for the career
+├── lib/
+│   ├── scoring.js           # pure scoring math (unit-tested)
+│   ├── resources.js         # skill → learning links
+│   ├── share.js             # share-link encode/decode + clipboard
+│   └── storage.js           # localStorage persistence
+├── components/
+│   ├── layout/              # Header, Hero, Footer
+│   ├── assessment/          # Stepper, StepCard, Education/Domain/Career/Skills steps
+│   ├── results/             # ResultsSection, ScoreCard, SummaryCards, SkillListCard, PriorityList, AiRecommendation
+│   ├── recommendations/     # CareerRecommendations
+│   └── ui/                  # ErrorBanner, LoadingScreen, MatchChart
+├── App.jsx                  # container: state + composition (~280 lines)
+└── main.jsx
+```
+
+## Feature notes
+
+- **Share links**: results are encoded into the URL hash (`#/share/...`).
+  Opening such a link restores selections + skill levels and shows the analysis.
+- **Persistence**: the assessment is saved to localStorage and restored on the
+  next visit.
+- **Learning resources**: each skill gap links to curated docs/roadmaps/courses
+  (`lib/resources.js` — extend the map to add more skills).
+- **Reduced motion**: the count-up score and entrance animations are disabled
+  when the user prefers reduced motion.

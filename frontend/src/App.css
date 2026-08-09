@@ -566,6 +566,8 @@ input[type="range"] {
 
   align-items: center;
 
+  flex-wrap: wrap;
+
   padding: 16px;
 
   border-radius: 12px;
@@ -587,7 +589,7 @@ input[type="range"] {
 }
 
 
-.result-skill > div:last-child {
+.result-skill-meta {
   display: flex;
 
   gap: 20px;
@@ -780,7 +782,7 @@ footer p {
   }
 
 
-  .result-skill > div:last-child {
+  .result-skill-meta {
     width: 100%;
 
     justify-content: space-between;
@@ -823,4 +825,195 @@ a:focus {
 
 .analyze-button:disabled {
   opacity: 0.6;
+}
+
+/* =========================================
+   STEPPER (P1d)
+========================================= */
+
+.stepper {
+  margin-bottom: 30px;
+}
+
+.stepper-steps {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.stepper-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.stepper-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(148, 163, 184, 0.15);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.stepper-step.done {
+  color: #7dd3fc;
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.stepper-step.done .stepper-dot {
+  background: linear-gradient(135deg, #0ea5e9, #6366f1);
+  color: #fff;
+}
+
+.stepper-step.active {
+  color: #e2e8f0;
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+}
+
+.stepper-step.active .stepper-dot {
+  border: 2px solid #38bdf8;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+}
+
+.stepper-bar {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.12);
+  overflow: hidden;
+}
+
+.stepper-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #0ea5e9, #6366f1);
+  transition: width 0.4s ease;
+}
+
+/* =========================================
+   LEARN LINKS (P1b)
+========================================= */
+
+.learn-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.learn-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  color: #7dd3fc;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.learn-link:hover {
+  background: rgba(56, 189, 248, 0.16);
+  transform: translateY(-1px);
+}
+
+/* =========================================
+   SHARE BUTTON (P1c)
+========================================= */
+
+.share-button {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 10px 18px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.1);
+  color: #7dd3fc;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.share-button:hover {
+  background: rgba(56, 189, 248, 0.18);
+  transform: translateY(-1px);
+}
+
+/* =========================================
+   ANIMATIONS (P1d)
+========================================= */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.results-section {
+  animation: fadeInUp 0.5s ease-out both;
+}
+
+.score-card {
+  animation: fadeInUp 0.5s ease-out both;
+}
+
+.analysis-summary {
+  animation: fadeInUp 0.5s ease-out 0.06s both;
+}
+
+.result-card,
+.recommendation-card {
+  animation: fadeInUp 0.5s ease-out both;
+}
+
+.result-card:nth-of-type(2),
+.recommendation-card:nth-of-type(2) {
+  animation-delay: 0.08s;
+}
+
+.result-card:nth-of-type(3),
+.recommendation-card:nth-of-type(3) {
+  animation-delay: 0.14s;
+}
+
+.result-card:nth-of-type(4) {
+  animation-delay: 0.2s;
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

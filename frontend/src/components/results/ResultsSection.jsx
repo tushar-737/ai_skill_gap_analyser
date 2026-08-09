@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import AiRecommendation from "./AiRecommendation";
 import PriorityList from "./PriorityList";
 import ScoreCard from "./ScoreCard";
@@ -5,13 +7,26 @@ import SkillListCard from "./SkillListCard";
 import SummaryCards from "./SummaryCards";
 
 // FULL RESULTS SECTION — score, summary, strong skills,
-// skill gaps, priority learning and AI recommendation.
-// Keeps id="results" so the analyze button can scroll here.
+// skill gaps, priority learning, AI recommendation and a
+// share button. Keeps id="results" so the analyze button
+// can scroll here.
 
 export default function ResultsSection({
     results,
     careerName,
+    onCopyShareLink,
 }) {
+    const [copied, setCopied] = useState(false);
+
+    async function handleShare() {
+        const ok = await onCopyShareLink();
+
+        if (ok) {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    }
+
     return (
         <section
             id="results"
@@ -28,6 +43,18 @@ export default function ResultsSection({
                     Here's how prepared you are for
                     your selected career.
                 </p>
+
+                {onCopyShareLink && (
+                    <button
+                        className="share-button"
+                        onClick={handleShare}
+                        aria-label="Copy a link to this result"
+                    >
+                        {copied
+                            ? "✓ Link Copied!"
+                            : "🔗 Share Result Link"}
+                    </button>
+                )}
             </div>
 
             <ScoreCard

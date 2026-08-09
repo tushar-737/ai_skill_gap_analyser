@@ -1,8 +1,11 @@
+import { getLearningLinks } from "../../lib/resources";
+
 // Reusable skill list card — used for both "Strong Skills"
 // and "Skills You Need to Improve".
 //
 // variant="strong": shows "Your level: X%" + ✓ Ready
 // variant="gap":    shows "Your level / Required / Gap"
+//                   plus "Learn it" links per skill gap.
 
 export default function SkillListCard({
     title,
@@ -50,7 +53,7 @@ export default function SkillListCard({
                                 </span>
                             </div>
 
-                            <div>
+                            <div className="result-skill-meta">
                                 <span>
                                     Your level:{" "}
                                     {skill.current}%
@@ -77,6 +80,24 @@ export default function SkillListCard({
                                     </span>
                                 )}
                             </div>
+
+                            {isGap && (
+                                <div className="learn-links">
+                                    {getLearningLinks(
+                                        skill.skill
+                                    ).map((link) => (
+                                        <a
+                                            key={link.url}
+                                            className="learn-link"
+                                            href={link.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            📚 {link.label}
+                                        </a>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>

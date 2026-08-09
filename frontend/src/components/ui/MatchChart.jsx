@@ -1,7 +1,11 @@
 import React, { useId } from "react";
 
-export default function MatchChart({ score = 0, size = 96, stroke = 10 }) {
-
+export default function MatchChart({
+    score = 0,
+    size = 96,
+    stroke = 10,
+    ariaScore,
+}) {
     // useId is unique per component instance, preventing gradient
     // collisions when multiple charts render on the same page.
     // Colons are stripped because some browsers mishandle them in
@@ -12,13 +16,17 @@ export default function MatchChart({ score = 0, size = 96, stroke = 10 }) {
     const circumference = 2 * Math.PI * radius;
     const offset = circumference * (1 - Math.min(Math.max(score, 0), 100) / 100);
 
+    // ariaScore lets callers animate the visible number while
+    // keeping the screen-reader label at the final value.
+    const label = Math.round(ariaScore ?? score);
+
     return (
         <svg
             width={size}
             height={size}
             viewBox={`0 0 ${size} ${size}`}
             role="img"
-            aria-label={`Match score ${score} percent`}
+            aria-label={`Match score ${label} percent`}
         >
             <defs>
                 <linearGradient id={gradientId} x1="0%" x2="100%">

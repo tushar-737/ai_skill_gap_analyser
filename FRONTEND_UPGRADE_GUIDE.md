@@ -131,22 +131,19 @@ Removing dead deps shrinks `package.json`, install time, and bundle; oxlint then
 
 ### 🚀 P1 — Short-term · 2–5 days · biggest quality leap
 
-1. ✅ **Split `App.jsx` into components** (see structure below) and move each `useEffect` fetch into a small custom hook — **done**: `src/hooks/useInitialData.js`, `useCareers.js`, `useDomainCareerSkills.js`, `useCareerSkills.js` + pure scoring in `src/lib/scoring.js`. (TanStack Query still optional later.)
-2. **Stepper UI** — convert the 4 cards into a real progress stepper (1 Education → 2 Domain → 3 Career → 4 Skills), auto-advance, and show which steps are done.
-3. **Persistence**:
-   - `localStorage` auto-save of selections + skill levels (restore on reload).
-   - "Share / copy link" that encodes the career + levels in the URL hash (decode on load) — cheap, high delight.
-   - Optional: save analyses to backend (new `GET/POST /api/analyses`).
-4. **Skeletons + retry** — skeleton cards while loading; a "Retry" button on the global error banner.
-5. **Results animations** — fade/slide-in on the results section, animated score count-up, staggered skill rows; respect `prefers-reduced-motion`.
-6. **Icons** — adopt `lucide-react` (small, tree-shakable) and replace emoji/`✓/!/→` glyphs in UI (keeps cross-platform look consistent).
-7. **Suggested learning resources per gap** — the highest-value "AI" feature you can add cheaply: map each skill gap to curated links (official docs, roadmap.sh, free courses). Static map in frontend or `resources` table in DB; render as "Learn it" buttons on each gap.
-8. **Compare careers** — you already compute `careerRecommendations`; add a side-by-side mode (selected career vs. top alternative) reusing `MatchChart` with `useId`.
+1. ✅ **Split `App.jsx` into components** — **done**: `src/hooks/useInitialData.js`, `useCareers.js`, `useDomainCareerSkills.js`, `useCareerSkills.js` + pure scoring in `src/lib/scoring.js`. (TanStack Query still optional later.)
+2. ✅ **Stepper UI** — done: `Stepper.jsx` shows progress through the 4 steps with an animated progress bar.
+3. ✅ **Persistence** — done: `lib/storage.js` (localStorage auto-save/restore) + `lib/share.js` (shareable `#/share/...` links that restore the full analysis; "Share Result Link" button).
+4. **Skeletons + retry** — partially done: loading states exist per step; a Retry button on the global error banner is still open.
+5. ✅ **Results animations** — done: fade/slide-in on results, score count-up; respects `prefers-reduced-motion`.
+6. **Icons** — open: adopt `lucide-react` (small, tree-shakable) and replace emoji/`✓/!/→` glyphs for a consistent cross-platform look.
+7. ✅ **Suggested learning resources per gap** — done: `lib/resources.js` maps ~30 skills to curated links (docs, roadmap.sh, courses); rendered as "Learn it" pills on each gap. Extend the map to add more skills.
+8. **Compare careers** — open: side-by-side mode (selected career vs. top alternative) reusing `MatchChart`.
 
 ### 🏗️ P2 — Long-term · 1–3 weeks · "production-grade project"
 
-1. **TypeScript migration** — the single biggest "good project" signal. Types for `Skill`, `Career`, `Domain`, `AnalysisResult` turn the gap math into compile-checked code. Do it incrementally (`.tsx` per component; `tsc --noEmit` in CI).
-2. **Testing** — add **Vitest + React Testing Library**. Prioritize: gap-score math unit tests (pure functions extracted from `App.jsx`), component smoke tests, and a mocked-API flow test of the assessment.
+1. **TypeScript migration** — the single biggest "good project" signal. Types for `Skill`, `Career`, `Domain`, `AnalysisResult` turn the gap math into compile-checked code. Do it incrementally (`.tsx` per component; `tsc --noEmit` in CI). *Still open — recommended as its own dedicated pass.*
+2. ✅ **Testing** — **done**: Vitest + unit tests for `lib/scoring.js` (`npm test`). Next step: component tests with React Testing Library, and a mocked-API flow test of the assessment.
 3. **React Router adoption** — `#/` home (assessment), `#/results/:id` (shareable result page), `#/dashboard` (history/progress). The package is already in `package.json`.
 4. **Dashboard with progress over time** — if you add history persistence, `recharts` (already installed) can plot readiness-score trends across re-assessments.
 5. **State management** — TanStack Query for server state + plain context for the assessment wizard. No Redux needed at this scale.
