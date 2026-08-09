@@ -1,6 +1,12 @@
-import React from "react";
+import React, { useId } from "react";
 
 export default function MatchChart({ score = 0, size = 96, stroke = 10 }) {
+
+    // useId is unique per component instance, preventing gradient
+    // collisions when multiple charts render on the same page.
+    // Colons are stripped because some browsers mishandle them in
+    // SVG url(#...) fragment references.
+    const gradientId = useId().replace(/:/g, "");
 
     const radius = (size - stroke) / 2;
     const circumference = 2 * Math.PI * radius;
@@ -15,7 +21,7 @@ export default function MatchChart({ score = 0, size = 96, stroke = 10 }) {
             aria-label={`Match score ${score} percent`}
         >
             <defs>
-                <linearGradient id="grad" x1="0%" x2="100%">
+                <linearGradient id={gradientId} x1="0%" x2="100%">
                     <stop offset="0%" stopColor="#4f46e5" />
                     <stop offset="100%" stopColor="#06b6d4" />
                 </linearGradient>
@@ -25,14 +31,14 @@ export default function MatchChart({ score = 0, size = 96, stroke = 10 }) {
                 <circle
                     r={radius}
                     fill="none"
-                    stroke="#eee"
+                    stroke="rgba(148, 163, 184, 0.15)"
                     strokeWidth={stroke}
                 />
 
                 <circle
                     r={radius}
                     fill="none"
-                    stroke="url(#grad)"
+                    stroke={`url(#${gradientId})`}
                     strokeWidth={stroke}
                     strokeLinecap="round"
                     strokeDasharray={`${circumference} ${circumference}`}
@@ -47,7 +53,7 @@ export default function MatchChart({ score = 0, size = 96, stroke = 10 }) {
                     dominantBaseline="central"
                     fontSize={size * 0.24}
                     fontWeight="600"
-                    fill="#111827"
+                    fill="#e2e8f0"
                 >
                     {Math.round(score)}%
                 </text>

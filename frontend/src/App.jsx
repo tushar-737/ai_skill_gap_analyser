@@ -27,6 +27,7 @@ function App() {
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [formError, setFormError] = useState("");
 
     const [selectedEducation, setSelectedEducation] = useState("");
     const [selectedDomain, setSelectedDomain] = useState("");
@@ -513,22 +514,24 @@ function App() {
     // =====================================================
 
     function handleAnalyze() {
+        setFormError("");
+
         if (!selectedEducation) {
-            alert(
+            setFormError(
                 "Please select your education."
             );
             return;
         }
 
         if (!selectedDomain) {
-            alert(
+            setFormError(
                 "Please select a career domain."
             );
             return;
         }
 
         if (!selectedCareer) {
-            alert(
+            setFormError(
                 "Please select a target career."
             );
             return;
@@ -537,7 +540,7 @@ function App() {
         if (
             requiredSkills.length === 0
         ) {
-            alert(
+            setFormError(
                 "No skills found for this career."
             );
             return;
@@ -655,6 +658,15 @@ function App() {
                     </div>
                 )}
 
+                {formError && (
+                    <div
+                        className="error-message"
+                        role="alert"
+                    >
+                        {formError}
+                    </div>
+                )}
+
                 {/* =================================================
                     STEP 1 - EDUCATION
                 ================================================= */}
@@ -680,11 +692,12 @@ function App() {
                             value={
                                 selectedEducation
                             }
-                            onChange={(event) =>
+                            onChange={(event) => {
+                                setFormError("");
                                 setSelectedEducation(
                                     event.target.value
-                                )
-                            }
+                                );
+                            }}
                         >
                             <option value="">
                                 Select your education
@@ -737,11 +750,12 @@ function App() {
                             value={
                                 selectedDomain
                             }
-                            onChange={(event) =>
+                            onChange={(event) => {
+                                setFormError("");
                                 setSelectedDomain(
                                     event.target.value
-                                )
-                            }
+                                );
+                            }}
                         >
                             <option value="">
                                 Select a domain
@@ -790,11 +804,12 @@ function App() {
                             value={
                                 selectedCareer
                             }
-                            onChange={(event) =>
+                            onChange={(event) => {
+                                setFormError("");
                                 setSelectedCareer(
                                     event.target.value
-                                )
-                            }
+                                );
+                            }}
                             disabled={
                                 !selectedDomain ||
                                 loadingCareers

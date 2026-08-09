@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -22,18 +24,26 @@ app = FastAPI(
 # =====================================================
 # CORS
 # =====================================================
+#
+# Origins are read from the ALLOWED_ORIGINS env var (comma-separated)
+# so the API works from any frontend host (dev, preview, production).
+# Falls back to the common local Vite dev-server origins.
+
+ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("ALLOWED_ORIGINS", "").split(",")
+    if origin.strip()
+] or [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5175",
+    "http://127.0.0.1:5175",
+]
 
 app.add_middleware(
     CORSMiddleware,
 
-    allow_origins=[
-        "http://localhost:5175",
-        "http://127.0.0.1:5175",
-
-        # Keep these in case Vite changes back to 5173
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=ALLOWED_ORIGINS,
 
     allow_credentials=True,
 

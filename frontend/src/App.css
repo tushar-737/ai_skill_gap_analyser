@@ -1,31 +1,8 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* =========================================
+   BASE
+========================================= */
 
-body {
-  font-family:
-    Inter,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
-
-  background:
-    radial-gradient(
-      circle at top left,
-      #172554,
-      transparent 35%
-    ),
-    #020617;
-
-  color: #e2e8f0;
-
-  min-height: 100vh;
-}
-
+/* Base styles (body, box-sizing, selection) live in index.css */
 
 button,
 select,
@@ -345,6 +322,8 @@ select:disabled {
 
 
 .skill-row {
+  width: 100%;
+
   padding: 18px;
 
   border-radius: 15px;
@@ -355,6 +334,15 @@ select:disabled {
   border:
     1px solid
     rgba(148, 163, 184, 0.1);
+}
+
+.skill-row input[type="range"] {
+  display: block;
+  width: 100%;
+  height: 6px;
+  cursor: pointer;
+  appearance: auto;
+  -webkit-appearance: auto;
 }
 
 
@@ -798,27 +786,6 @@ footer p {
     justify-content: space-between;
   }
 
-}
-/* Skill rating controls */
-.skills-list {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.skill-row {
-  width: 100%;
-}
-
-.skill-row input[type="range"] {
-  display: block !important;
-  width: 100% !important;
-  height: 6px !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  cursor: pointer;
-  appearance: auto;
-  -webkit-appearance: auto;
 }
 
 

@@ -1,8 +1,15 @@
 // =====================================================
 // API BASE URL
 // =====================================================
+//
+// By default the app calls relative /api/... URLs. In development
+// Vite proxies /api to the FastAPI backend (see vite.config.js),
+// so the app works from any host without hardcoded localhost or CORS.
+//
+// For a deployment where the API lives elsewhere, set VITE_API_URL,
+// e.g. VITE_API_URL=https://api.example.com npm run build
 
-const API_BASE_URL = "http://127.0.0.1:8000";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 
 // =====================================================
