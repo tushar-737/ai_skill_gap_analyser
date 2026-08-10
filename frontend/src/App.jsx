@@ -269,6 +269,31 @@ function App() {
         }, 200);
     }
 
+    function handleReset() {
+        if (
+            !window.confirm(
+                "Reset assessment? This clears Education, Domain, Career, skill levels and results. Resume history in Workbench will stay."
+            )
+        )
+            return;
+        setSelectedEducation("");
+        setSelectedDomain("");
+        setSelectedCareer("");
+        setSkillLevels({});
+        setShowResults(false);
+        setFormError("");
+        setError("");
+        setResumeInfo(null);
+        pendingLevelsRef.current = null;
+        pendingResumeRef.current = null;
+        try {
+            localStorage.removeItem("skillgap:state:v1");
+        } catch {}
+        clearShareHash();
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
     // =====================================================
     // HANDLERS
     // =====================================================
@@ -452,6 +477,15 @@ function App() {
                 className="assessment-container"
             >
                 <Stepper activeStep={activeStep} />
+
+                {(selectedEducation || selectedDomain || selectedCareer || showResults) && (
+                    <div className="reset-bar">
+                        <span>Want a fresh start?</span>
+                        <button type="button" className="secondary-button" onClick={handleReset} style={{ padding: "8px 14px", fontSize: 13 }}>
+                            ↺ Reset Assessment
+                        </button>
+                    </div>
+                )}
 
                 {/* =========================================
                     ERROR MESSAGES
