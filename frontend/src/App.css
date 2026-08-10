@@ -3291,3 +3291,114 @@
     font-weight: 800;
     margin-left: 4px;
 }
+
+/* Resume v2 — Have a resume? spec */
+.resume-dropzone-v2 {
+    margin-top: 12px;
+    padding: 28px 18px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 16px;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    transition: 0.2s;
+}
+
+.resume-dropzone-v2.drag-over {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.resume-dropzone-v2 strong {
+    color: #0f172a;
+    font-size: 15px;
+}
+
+.resume-dropzone-v2 small {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.resume-pending {
+    margin-top: 12px;
+    padding: 14px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.resume-pending-file {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 12px;
+}
+
+.resume-file-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    background: #eef2ff;
+    font-size: 18px;
+}
+
+.resume-pending-file strong {
+    display: block;
+    color: #0f172a;
+    font-size: 13px;
+}
+
+.resume-pending-file small {
+    color: #64748b;
+    font-size: 11px;
+}
+
+.resume-pending-badge {
+    margin-left: auto;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #dcfce7;
+    color: #15803d;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.resume-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 8px;
+    text-align: center;
+}
+
+.resume-uploaded-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    font-size: 13px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.resume-uploaded-bar strong {
+    color: #0f172a;
+    font-size: 13px;
+}

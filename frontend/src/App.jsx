@@ -416,29 +416,15 @@ function App() {
 
                 {wizardStep === 3 && (
                     <>
-                        <div className="journey-card" style={{ padding: "18px 20px" }}>
-                            <div className="journey-header">
-                                <div className="journey-icon" aria-hidden>
-                                    📄
-                                </div>
-                                <div>
-                                    <span className="journey-kicker">Step 4 of 5 — Resume (Optional)</span>
-                                    <h2>Have a resume?</h2>
-                                    <p>Upload it and we&apos;ll use your existing skills to help build your profile. Or skip and rate manually.</p>
-                                </div>
-                                <span className="journey-step-badge">4</span>
-                            </div>
-                            <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-                                <button type="button" className="secondary-button" onClick={() => setWizardStep(2)}>
-                                    ← Back
-                                </button>
-                                <button type="button" className="secondary-button" onClick={() => document.querySelector(".skills-rater")?.scrollIntoView({ behavior: "smooth" })}>
-                                    Skip for now
-                                </button>
-                            </div>
-                        </div>
-
                         <ResumeUploader selectedCareer={selectedCareer} selectedEducation={selectedEducation} onExtracted={handleResumeExtracted} />
+                        <div className="journey-actions" style={{ justifyContent: "space-between", marginTop: 8 }}>
+                            <button type="button" className="secondary-button" onClick={() => setWizardStep(2)}>
+                                ← Back to Career
+                            </button>
+                            <button type="button" className="secondary-button" onClick={() => document.querySelector(".skills-rater")?.scrollIntoView({ behavior: "smooth" })}>
+                                Skip to Skills ↓
+                            </button>
+                        </div>
                         <ResumeHistory onReload={handleHistoryReload} refreshKey={historyRefresh} />
                     </>
                 )}
