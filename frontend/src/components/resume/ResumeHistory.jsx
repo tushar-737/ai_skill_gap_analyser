@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getResumeHistory } from "../../api/api";
+import { getResumeHistory, clearResumeHistory } from "../../api/api";
 
 export default function ResumeHistory({ onReload = () => {}, refreshKey = 0 }) {
     const [rows, setRows] = useState([]);
@@ -7,6 +7,7 @@ export default function ResumeHistory({ onReload = () => {}, refreshKey = 0 }) {
     const [error, setError] = useState("");
     const [expanded, setExpanded] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
+    const [clearing, setClearing] = useState(false);
 
     async function load() {
         setLoading(true);
@@ -61,9 +62,34 @@ export default function ResumeHistory({ onReload = () => {}, refreshKey = 0 }) {
                         </p>
                     </div>
                 </div>
-                <button type="button" className="secondary-button" onClick={load} style={{ padding: "6px 12px", fontSize: 13 }}>
-                    ↻
-                </button>
+                <div style={{ display: "flex", gap: 6 }}>
+                    <button type="button" className="secondary-button" onClick={load} style={{ padding: "6px 12px", fontSize: 13 }} title="Refresh">
+                        ↻
+                    </button>
+                    {rows.length > 0 && (
+                        <button
+                            type="button"
+                            className="secondary-button"
+                            onClick={async () => {
+                                if (!window.confirm(`Clear all ${rows.length} saved resumes? This deletes from Workbench resume_analyses.`)) return;
+                                setClearing(true);
+                                try {
+                                    await clearResumeHistory();
+                                    await load();
+                                } catch (e) {
+                                    setError(e.message);
+                                } finally {
+                                    setClearing(false);
+                                }
+                            }}
+                            disabled={clearing}
+                            style={{ padding: "6px 12px", fontSize: 12, color: "#b91c1c", borderColor: "#fecaca" }}
+                            title="Clear all history from Workbench"
+                        >
+                            {clearing ? "…" : "🗑 Clear All"}
+                        </button>
+                    )}
+                </div>
             </div>
 
             {!collapsed && (

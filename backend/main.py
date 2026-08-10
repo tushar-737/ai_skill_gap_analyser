@@ -60,7 +60,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -1877,3 +1877,23 @@ def resume_history(
         ]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"History unavailable (run workbench/init.sql): {e}")
+
+
+@app.delete("/api/resume/history")
+def clear_resume_history(db: Session = Depends(get_db)):
+    """Clear all resume history — for demo cleanup. No auth (demo app)."""
+    try:
+        count = db.query(models.ResumeAnalysis).delete()
+        db.commit()
+        # also clear in-memory resume cache
+        try:
+            _resume_cache.clear()
+        except Exception:
+            pass
+        return {"status": "success", "deleted": count}
+    except Exception as e:
+        try:
+            db.rollback()
+        except Exception:
+            pass
+        raise HTTPException(status_code=500, detail=f"Clear failed (run workbench/init.sql): {e}")

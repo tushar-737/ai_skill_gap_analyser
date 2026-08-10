@@ -248,3 +248,7 @@ export async function uploadResume(file, { targetCareerId, education } = {}) {
 export async function getResumeHistory(limit = 5) {
     return apiRequest(`/api/resume/history?limit=${limit}`);
 }
+
+export async function clearResumeHistory() {
+    return apiRequest("/api/resume/history", { method: "DELETE" });
+}
