@@ -1160,6 +1160,43 @@
     font-family: ui-monospace, monospace;
 }
 
+/* Resume History */
+.resume-history-list {
+    display: grid;
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.resume-history-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.resume-history-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.resume-history-main strong {
+    display: block;
+    color: #0f172a;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.resume-history-main small {
+    color: #64748b;
+    font-size: 12px;
+}
+
 
 /* =====================================================
    RESPONSIVE

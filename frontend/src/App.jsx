@@ -26,6 +26,7 @@ import DomainStep from "./components/assessment/DomainStep";
 import CareerStep from "./components/assessment/CareerStep";
 import SkillsRater from "./components/assessment/SkillsRater";
 import ResumeUploader from "./components/assessment/ResumeUploader";
+import ResumeHistory from "./components/resume/ResumeHistory";
 import ResultsSection from "./components/results/ResultsSection";
 import CareerRecommendations from "./components/recommendations/CareerRecommendations";
 
@@ -41,6 +42,7 @@ function App() {
     const [showResults, setShowResults] = useState(false);
     // Resume-inferred levels: { [skill_id]: level } — applied when career loads
     const [resumeInfo, setResumeInfo] = useState(null);
+    const [historyRefresh, setHistoryRefresh] = useState(0);
 
     // =====================================================
     // ERROR STATE
@@ -182,10 +184,17 @@ function App() {
 
     function handleResumeExtracted(data) {
         setResumeInfo(data);
+        setHistoryRefresh((k) => k + 1);
         setError("");
         // Store inferred levels for next career load or apply immediately
         if (data?.inferred_levels) {
             const inferred = data.inferred_levels; // { "1": 70, ... }
+            const sourceLabel =
+                data.extraction_source === "groq"
+                    ? "Groq AI"
+                    : data.extraction_source === "gemini"
+                      ? "Gemini AI"
+                      : "Keyword";
             if (selectedCareer && requiredSkills.length > 0) {
                 // Apply now to current career's skills
                 setSkillLevels((prev) => {
@@ -199,7 +208,7 @@ function App() {
                     return next;
                 });
                 setFormError(
-                    `✓ Resume parsed (${data.extraction_source === "gemini" ? "Gemini AI" : "keyword"}): ${data.extracted_skills?.length || 0} skills auto-filled. Adjust sliders and click Analyze.`
+                    `✓ Resume parsed (${sourceLabel}): ${data.extracted_skills?.length || 0} skills auto-filled. Adjust sliders and click Analyze.`
                 );
                 // Scroll to SkillsRater
                 setTimeout(() => {
@@ -209,10 +218,52 @@ function App() {
                 // No career yet — stash for when career loads
                 pendingResumeRef.current = inferred;
                 setFormError(
-                    `✓ Resume parsed: ${data.extracted_skills?.length || 0} skills found. Now select a domain & career to see them auto-filled.`
+                    `✓ Resume parsed (${sourceLabel}): ${data.extracted_skills?.length || 0} skills found. Now select a domain & career to see them auto-filled.`
                 );
             }
+        } else if (data?.extracted_skills) {
+            // History reload sends extracted_skills directly
+            const inferred = {};
+            data.extracted_skills.forEach((s) => {
+                if (s.skill_id) inferred[String(s.skill_id)] = s.inferred_level;
+            });
+            if (Object.keys(inferred).length > 0) {
+                if (selectedCareer && requiredSkills.length > 0) {
+                    setSkillLevels((prev) => {
+                        const next = { ...prev };
+                        requiredSkills.forEach((s) => {
+                            const k = String(s.skill_id);
+                            if (inferred[k] !== undefined) next[s.skill_id] = Number(inferred[k]);
+                        });
+                        return next;
+                    });
+                    setFormError(`✓ Reloaded ${data.file_name || "resume"} — ${Object.keys(inferred).length} skills restored.`);
+                } else {
+                    pendingResumeRef.current = inferred;
+                    setFormError(`✓ Reloaded ${data.file_name || "resume"} — select a career to see skills.`);
+                }
+            }
         }
+    }
+
+    function handleHistoryReload(row) {
+        const payload = {
+            file_name: row.file_name,
+            extracted_skills: row.extracted_skills?.skills || [],
+            inferred_levels: (() => {
+                const m = {};
+                (row.extracted_skills?.skills || []).forEach((s) => {
+                    if (s.skill_id) m[String(s.skill_id)] = s.inferred_level;
+                });
+                return m;
+            })(),
+            extraction_source: row.extraction_source,
+            summary: row.extracted_skills?.summary || "",
+        };
+        handleResumeExtracted(payload);
+        setTimeout(() => {
+            document.querySelector(".skills-rater")?.scrollIntoView({ behavior: "smooth" });
+        }, 200);
     }
 
     // =====================================================
@@ -439,6 +490,8 @@ function App() {
                     selectedEducation={selectedEducation}
                     onExtracted={handleResumeExtracted}
                 />
+
+                <ResumeHistory onReload={handleHistoryReload} refreshKey={historyRefresh} />
 
                 {/* =========================================
                     STEP 4 — RATE YOUR SKILLS
