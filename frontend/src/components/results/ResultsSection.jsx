@@ -36,7 +36,11 @@ export default function ResultsSection({ results, careerName, onCopyShareLink, a
                     YOUR CAREER ANALYSIS
                 </span>
                 <h2>{careerName || "Your Career Analysis"}</h2>
-                <p>Here’s how prepared you are for your selected career.</p>
+                <p>AI-powered — your skills are analyzed against career-specific requirements to identify gaps and recommend suitable paths.</p>
+                <p style={{ fontSize: 13, color: "#475569", maxWidth: 560, margin: "8px auto 0" }}>
+                    Based on your current profile, you are <strong>strongest in {results.strongSkills.slice(0, 2).map((s) => s.name).join(", ") || "foundational skills"}</strong>. Your biggest improvement opportunity is{" "}
+                    <strong>{results.skillGaps[0]?.name || "your top gap"}</strong> — fix it first.
+                </p>
                 {onCopyShareLink && (
                     <button className="share-button" onClick={handleShare} aria-label="Copy a link to this result">
                         {copied ? "✓ Link Copied!" : "🔗 Share Result Link"}
@@ -106,7 +110,7 @@ export default function ResultsSection({ results, careerName, onCopyShareLink, a
 
             {results.skillGaps.length > 0 && <PriorityList skills={results.skillGaps} />}
 
-            <AiRecommendation matchScore={results.matchScore} roadmap={aiRoadmap} loading={loadingRoadmap} error={roadmapError} />
+            <AiRecommendation matchScore={results.matchScore} roadmap={aiRoadmap} loading={loadingRoadmap} error={roadmapError} skillGaps={results.skillGaps} />
         </section>
     );
 }
