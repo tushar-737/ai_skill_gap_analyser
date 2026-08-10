@@ -1731,3 +1731,363 @@
         font-size: 18px;
     }
 }
+
+/* =====================================================
+   SPRINT 2 — Dual bars + Dashboard + Chart
+===================================================== */
+
+/* SkillsRater v2 — Your vs Required */
+.skills-list-v2 {
+    display: grid;
+    gap: 16px;
+    margin-top: 18px;
+}
+
+.skill-item-v2 {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 16px;
+    transition: 0.2s;
+}
+
+.skill-item-v2:hover {
+    border-color: #cbd5e1;
+    background: white;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
+}
+
+.skill-item-v2.is-strong {
+    border-left: 4px solid #22c55e;
+}
+
+.skill-item-v2.has-gap {
+    border-left: 4px solid #f59e0b;
+}
+
+.skill-v2-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.skill-v2-name {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 14px;
+}
+
+.skill-v2-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.skill-v2-current {
+    color: #2563eb;
+}
+
+.skill-v2-divider {
+    color: #cbd5e1;
+}
+
+.skill-v2-required {
+    color: #64748b;
+}
+
+.skill-bar-row {
+    display: grid;
+    grid-template-columns: 92px 1fr 42px;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    font-size: 12px;
+}
+
+.skill-bar-row.required {
+    opacity: 0.95;
+}
+
+.skill-bar-label {
+    color: #64748b;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+}
+
+.skill-track {
+    height: 8px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    overflow: hidden;
+    position: relative;
+}
+
+.skill-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.skill-fill-your {
+    background: linear-gradient(90deg, #2563eb, #0ea5e9);
+}
+
+.skill-fill-required {
+    background: #64748b;
+}
+
+.skill-bar-value {
+    font-weight: 700;
+    text-align: right;
+    color: #2563eb;
+    font-size: 12px;
+}
+
+.skill-bar-value.required {
+    color: #475569;
+}
+
+.skill-item-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 8px;
+    margin-bottom: 6px;
+}
+
+.skill-gap-badge {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+.skill-gap-badge.good {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.skill-gap-badge.low {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.skill-gap-badge.medium {
+    background: #ffedd5;
+    color: #9a3412;
+}
+
+.skill-gap-badge.high {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.skill-category {
+    font-size: 11px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.skill-item-v2 input[type="range"] {
+    width: 100%;
+    accent-color: #2563eb;
+    margin-top: 4px;
+}
+
+/* Dashboard — 4 metrics */
+.metrics-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.metric-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 16px;
+    border-radius: 14px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+}
+
+.metric-card .summary-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+}
+
+.metric-card strong {
+    font-size: 22px;
+    line-height: 1;
+}
+
+.metric-card small {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+/* Score card dashboard */
+.score-card-dashboard {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 60%, #eef2ff 100%);
+    border: 1px solid #e0e7ff;
+    padding: 22px;
+    gap: 22px;
+}
+
+.score-kicker {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #2563eb;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.score-card-dashboard .score-details h3 {
+    font-size: 22px;
+    margin-bottom: 4px;
+}
+
+.score-meta {
+    display: flex;
+    gap: 8px;
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 8px;
+    font-weight: 600;
+}
+
+/* Gap chart */
+.chart-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+}
+
+.gap-chart {
+    display: grid;
+    gap: 14px;
+    margin-top: 12px;
+}
+
+.gap-chart-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 14px;
+    align-items: center;
+    padding: 12px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+}
+
+.gap-chart-label {
+    min-width: 0;
+}
+
+.gap-chart-label strong {
+    display: block;
+    font-size: 13px;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gap-chart-label small {
+    color: #dc2626;
+    font-weight: 700;
+    font-size: 11px;
+}
+
+.gap-chart-bars {
+    display: grid;
+    gap: 6px;
+}
+
+.gap-bar {
+    display: grid;
+    grid-template-columns: 36px 1fr 36px;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+}
+
+.gap-bar-name {
+    font-weight: 700;
+    color: #64748b;
+    font-size: 10px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.gap-track {
+    height: 8px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    overflow: hidden;
+}
+
+.gap-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gap-fill-your {
+    background: linear-gradient(90deg, #2563eb, #38bdf8);
+}
+
+.gap-fill-need {
+    background: #475569;
+}
+
+.gap-value {
+    font-weight: 700;
+    text-align: right;
+    color: #2563eb;
+}
+
+.gap-value.need {
+    color: #475569;
+}
+
+@media (max-width: 860px) {
+    .metrics-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 560px) {
+    .skill-bar-row {
+        grid-template-columns: 78px 1fr 36px;
+    }
+    .gap-chart-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .gap-chart-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+    }
+    .score-card-dashboard {
+        flex-direction: column;
+        text-align: center;
+    }
+    .score-meta {
+        justify-content: center;
+    }
+}
