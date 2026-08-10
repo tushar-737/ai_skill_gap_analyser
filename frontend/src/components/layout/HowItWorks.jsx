@@ -23,7 +23,7 @@ export default function HowItWorks() {
                             <h3>{s.title}</h3>
                             <p>{s.desc}</p>
                             {i < steps.length - 1 && <span className="how-arrow" aria-hidden>
-                                ↓
+                                →
                             </span>}
                         </div>
                     ))}
