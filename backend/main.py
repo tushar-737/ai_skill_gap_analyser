@@ -1025,6 +1025,12 @@ GEMINI_URL = (
 # Debug helper — logs whether Gemini passkey is loaded (without printing the key)
 print(f"[Gemini] API key loaded: {'yes' if GEMINI_API_KEY else 'no'} ({len(GEMINI_API_KEY) if GEMINI_API_KEY else 0} chars), model={GEMINI_MODEL}")
 
+# Simple in-memory cache + last-error tracking for quota UX
+# (resets on server restart — fine for free-tier demo)
+_last_gemini_resume_error: Optional[str] = None
+_last_gemini_roadmap_error: Optional[str] = None
+_resume_cache: Dict[str, tuple] = {}  # key -> (response_dict, timestamp)
+
 
 class SkillGapItem(BaseModel):
     name: str
@@ -1105,7 +1111,9 @@ def build_roadmap_prompt(payload: AiRoadmapRequest) -> str:
 
 
 def call_gemini_roadmap(payload: AiRoadmapRequest) -> Optional[dict]:
+    global _last_gemini_roadmap_error
     if not GEMINI_API_KEY:
+        _last_gemini_roadmap_error = "no_key"
         return None
 
     try:
@@ -1136,11 +1144,14 @@ def call_gemini_roadmap(payload: AiRoadmapRequest) -> Optional[dict]:
 
         if "summary" in parsed and "steps" in parsed:
             parsed["source"] = "ai"
+            _last_gemini_roadmap_error = None
             return parsed
 
         return None
 
     except Exception as e:
+        msg = str(e)
+        _last_gemini_roadmap_error = msg
         print("GEMINI ROADMAP ERROR:", e)
         return None
 
@@ -1331,9 +1342,12 @@ def _call_gemini_resume_extract(
     known_skills: List[models.Skill],
 ) -> Optional[dict]:
     """Ask Gemini to map resume text -> skills with inferred 0-100 levels."""
+    global _last_gemini_resume_error
     if not GEMINI_API_KEY:
+        _last_gemini_resume_error = "no_key"
         return None
     if not resume_text or len(resume_text.strip()) < 20:
+        _last_gemini_resume_error = "text_too_short"
         return None
 
     # Build known-skills hint (limit to 80 to keep prompt small)
@@ -1373,9 +1387,11 @@ def _call_gemini_resume_extract(
         parsed = json.loads(text_out)
         if "skills" in parsed and isinstance(parsed["skills"], list):
             parsed["source"] = "gemini"
+            _last_gemini_resume_error = None
             return parsed
         return None
     except Exception as e:
+        _last_gemini_resume_error = str(e)
         print("GEMINI RESUME ERROR:", e)
         return None
 
@@ -1473,6 +1489,15 @@ async def analyze_resume(
             status_code=422,
             detail="Could not extract text from resume. If it's a scanned PDF, try exporting to searchable PDF or DOCX.",
         )
+
+    # --- Cache check (5 min) — avoid re-calling Gemini for same file ---
+    cache_key = f"{hash(raw_text[:2000])}_{target_career_id}_{file.filename}"
+    now_ts = datetime.utcnow().timestamp()
+    if cache_key in _resume_cache:
+        cached_resp, ts = _resume_cache[cache_key]
+        if now_ts - ts < 300:
+            # Return cached response (update file_size in case)
+            return cached_resp
 
     # --- Load known skills from Workbench DB ---
     try:
@@ -1611,7 +1636,20 @@ async def analyze_resume(
         except Exception:
             pass
 
-    return {
+    # --- Quota/attempt info for frontend banner ---
+    gemini_attempted = bool(GEMINI_API_KEY)
+    fallback_reason = None
+    gemini_error = _last_gemini_resume_error
+    if gemini_attempted and source == "keyword" and gemini_error:
+        low = gemini_error.lower()
+        if "429" in gemini_error or "too many requests" in low or "quota" in low or "resource_exhausted" in low:
+            fallback_reason = "quota"
+        elif "api_key" in low or "api key" in low or "permission" in low:
+            fallback_reason = "invalid_key"
+        else:
+            fallback_reason = "error"
+
+    response = {
         "status": "success",
         "file_name": file.filename,
         "file_size": len(data),
@@ -1619,6 +1657,9 @@ async def analyze_resume(
         "text_preview": raw_text[:800],
         "extraction_source": source,
         "gemini_used": source == "gemini",
+        "gemini_attempted": gemini_attempted,
+        "fallback_reason": fallback_reason,
+        "gemini_error": gemini_error if fallback_reason else None,
         "summary": summary,
         "extracted_skills": mapped,
         # Frontend can directly do: setSkillLevels({...mapped levels})
@@ -1627,6 +1668,19 @@ async def analyze_resume(
         "saved_id": saved_id,
         "workbench_hint": "SELECT * FROM resume_analyses ORDER BY created_at DESC LIMIT 5;" if saved_id else "Run backend/workbench/init.sql in MySQL Workbench to enable saving.",
     }
+
+    # Cache for 5 min to prevent quota burn on re-uploads
+    try:
+        _resume_cache[cache_key] = (response, datetime.utcnow().timestamp())
+        # keep cache small
+        if len(_resume_cache) > 50:
+            # drop oldest
+            oldest = min(_resume_cache, key=lambda k: _resume_cache[k][1])
+            _resume_cache.pop(oldest, None)
+    except Exception:
+        pass
+
+    return response
 
 
 @app.get("/api/resume/history")

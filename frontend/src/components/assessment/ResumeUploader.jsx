@@ -150,6 +150,28 @@ export default function ResumeUploader({
                         </span>
                     </div>
 
+                    {/* Quota / fallback banner */}
+                    {result.extraction_source === "keyword" && result.gemini_attempted && result.fallback_reason === "quota" && (
+                        <div className="error-message" style={{ background: "#fffbeb", borderColor: "#fde68a", color: "#92400e" }}>
+                            ⚠️ Gemini quota hit (429) — using Keyword fallback. Wait ~60s or switch <code>GET /api/resume/analyze</code> model in <code>backend/.env</code> to <code>gemini-1.5-flash</code>. Your upload was still saved to Workbench.
+                        </div>
+                    )}
+                    {result.extraction_source === "keyword" && result.gemini_attempted && result.fallback_reason === "invalid_key" && (
+                        <div className="error-message">
+                            ⚠️ Gemini key invalid — check <code>GEMINI_API_KEY</code> in <code>backend/.env</code> (should be <code>AQ...</code> from AI Studio) and restart backend.
+                        </div>
+                    )}
+                    {result.extraction_source === "keyword" && result.gemini_attempted && result.fallback_reason === "error" && result.gemini_error && (
+                        <div className="error-message">
+                            ℹ️ Gemini fallback: {String(result.gemini_error).slice(0, 120)}
+                        </div>
+                    )}
+                    {!result.gemini_attempted && result.extraction_source === "keyword" && (
+                        <div className="error-message" style={{ background: "#f0fdf4", borderColor: "#bbf7d0", color: "#166534" }}>
+                            ℹ️ Running in offline Keyword mode (no GEMINI_API_KEY). Add it to <code>backend/.env</code> for AI levels.
+                        </div>
+                    )}
+
                     {result.summary && <p className="resume-summary">{result.summary}</p>}
 
                     {result.gap_preview && (
