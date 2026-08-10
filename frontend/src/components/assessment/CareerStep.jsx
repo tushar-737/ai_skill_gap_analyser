@@ -1,3 +1,5 @@
+import SearchableSelect from "../ui/SearchableSelect";
+
 export default function CareerStep({ careers = [], loading = false, disabled = false, value = "", onChange = () => {}, onContinue, onBack, stepLabel = "Step 3 of 5" }) {
     return (
         <section className="assessment-step journey-card">
@@ -13,18 +15,15 @@ export default function CareerStep({ careers = [], loading = false, disabled = f
                 <span className="journey-step-badge">3</span>
             </div>
 
-            <div className="form-group">
-                <label htmlFor="career">Which role are you targeting?</label>
-                <select id="career" value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled || loading}>
-                    <option value="">{loading ? "Loading careers..." : disabled ? "Select a domain first" : "Select a career"}</option>
-                    {!loading &&
-                        careers.map((career) => (
-                            <option key={career.id} value={career.id}>
-                                {career.name}
-                            </option>
-                        ))}
-                </select>
-            </div>
+            <SearchableSelect
+                id="career"
+                label="Which role are you targeting?"
+                options={careers}
+                value={value}
+                onChange={onChange}
+                placeholder={loading ? "Loading careers..." : disabled ? "Select a domain first" : "Search target career... (e.g., Scientist)"}
+                disabled={disabled || loading}
+            />
 
             <div className="journey-actions">
                 <button type="button" className="secondary-button" onClick={onBack}>

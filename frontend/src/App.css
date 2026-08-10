@@ -3591,3 +3591,44 @@ select:focus-visible {
         grid-template-columns: 1fr;
     }
 }
+
+/* Searchable combobox — Priority 1 (keyboard + highlight) */
+.searchable-input.open {
+    border-color: #2563eb;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.searchable-input.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.searchable-chevron {
+    color: #94a3b8;
+    font-size: 12px;
+    transition: transform 0.2s;
+}
+
+.searchable-input.open .searchable-chevron {
+    transform: rotate(180deg);
+}
+
+.searchable-option.highlight {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.searchable-option.selected {
+    font-weight: 700;
+}
+
+/* Focus ring for accessibility */
+.searchable-input input:focus-visible {
+    outline: none;
+}
+
+.searchable-option:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: -2px;
+}

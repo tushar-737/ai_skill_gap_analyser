@@ -1,3 +1,5 @@
+import SearchableSelect from "../ui/SearchableSelect";
+
 export default function DomainStep({ domains = [], value = "", onChange = () => {}, onContinue, onBack, stepLabel = "Step 2 of 5" }) {
     return (
         <section className="assessment-step journey-card">
@@ -13,18 +15,15 @@ export default function DomainStep({ domains = [], value = "", onChange = () => 
                 <span className="journey-step-badge">2</span>
             </div>
 
-            <div className="form-group">
-                <label htmlFor="domain">Which field</label>
-                <select id="domain" value={value} onChange={(e) => onChange(e.target.value)}>
-                    <option value="">Select a career domain</option>
-                    {domains.map((domain) => (
-                        <option key={domain.id} value={domain.id}>
-                            {domain.name}
-                        </option>
-                    ))}
-                </select>
-                <small style={{ color: "#64748b", fontSize: 12, display: "block", marginTop: 6 }}>Domain = the broader field • Career = specific role</small>
-            </div>
+            <SearchableSelect
+                id="domain"
+                label="Which field"
+                options={domains}
+                value={value}
+                onChange={onChange}
+                placeholder="Search career domain... (e.g., Data)"
+            />
+            <small style={{ color: "#64748b", fontSize: 12, display: "block", marginTop: 6 }}>Domain = broader field • Career = specific role • Type to filter</small>
 
             <div className="journey-actions">
                 <button type="button" className="secondary-button" onClick={onBack}>
