@@ -1261,20 +1261,39 @@ def _extract_text_from_bytes(data: bytes, filename: str) -> str:
         except Exception:
             return ""
 
-    # --- DOCX / DOC ---
+    # --- DOCX / DOC (docx parsed without lxml: zip + stdlib xml) ---
     if name.endswith(".docx") or name.endswith(".doc"):
+        # Try python-docx first if available (needs lxml), else fallback to zip+xml
         try:
-            import docx
+            import docx  # type: ignore
 
             doc = docx.Document(io.BytesIO(data))
-            return "\n".join(p.text for p in doc.paragraphs).strip()
+            txt = "\n".join(p.text for p in doc.paragraphs).strip()
+            if txt:
+                return txt
         except Exception as e:
-            print("DOCX EXTRACT ERROR:", e)
-            # docx can't read old .doc — fall back to text decode
-            try:
-                return data.decode("utf-8", errors="ignore")
-            except Exception:
-                return ""
+            print("DOCX (python-docx) Extract note:", e)
+        # Fallback: unzip .docx and parse word/document.xml with stdlib
+        try:
+            import zipfile
+            import xml.etree.ElementTree as ET
+
+            with zipfile.ZipFile(io.BytesIO(data)) as z:
+                xml_bytes = z.read("word/document.xml")
+            # Word uses w:t for text nodes
+            root = ET.fromstring(xml_bytes)
+            ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+            texts = [node.text for node in root.findall(".//w:t", ns) if node.text]
+            txt = "\n".join(texts).strip()
+            if txt:
+                return txt
+        except Exception as e:
+            print("DOCX (zip) Extract note:", e)
+        # Old .doc (not zip) — fall back to text decode
+        try:
+            return data.decode("utf-8", errors="ignore")
+        except Exception:
+            return ""
 
     # --- TXT / fallback ---
     try:

@@ -27,10 +27,8 @@ annotated-doc==0.0.5
 typing-extensions==4.16.0
 typing-inspection==0.4.2
 
-# Resume parsing
+# Resume parsing (docx parsed via stdlib zipfile — no lxml needed)
 pypdf==4.3.1
-python-docx==1.1.2
-lxml==5.3.0
 
 # Misc (click pulled by uvicorn)
 click==8.3.1
