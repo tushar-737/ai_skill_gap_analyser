@@ -15,6 +15,9 @@ export default function ResultsSection({
     results,
     careerName,
     onCopyShareLink,
+    aiRoadmap,
+    loadingRoadmap,
+    roadmapError,
 }) {
     const [copied, setCopied] = useState(false);
 
@@ -86,6 +89,9 @@ export default function ResultsSection({
 
             <AiRecommendation
                 matchScore={results.matchScore}
+                roadmap={aiRoadmap}
+                loading={loadingRoadmap}
+                error={roadmapError}
             />
         </section>
     );

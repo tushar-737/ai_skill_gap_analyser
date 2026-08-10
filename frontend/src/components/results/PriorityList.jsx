@@ -34,7 +34,7 @@ export default function PriorityList({ skills }) {
 
                         <div>
                             <strong>
-                                {skill.skill}
+                                {skill.name}
                             </strong>
 
                             <small>
@@ -47,7 +47,7 @@ export default function PriorityList({ skills }) {
 
                             <div className="learn-links">
                                 {getLearningLinks(
-                                    skill.skill
+                                    skill.name
                                 ).map((link) => (
                                     <a
                                         key={link.url}

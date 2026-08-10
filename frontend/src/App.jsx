@@ -6,6 +6,7 @@ import { useInitialData } from "./hooks/useInitialData";
 import { useCareers } from "./hooks/useCareers";
 import { useDomainCareerSkills } from "./hooks/useDomainCareerSkills";
 import { useCareerSkills } from "./hooks/useCareerSkills";
+import { useAiRoadmap } from "./hooks/useAiRoadmap";
 
 import {
     computeCareerRecommendations,
@@ -278,6 +279,23 @@ function App() {
     )?.name;
 
     // =====================================================
+    // AI-GENERATED LEARNING ROADMAP
+    // =====================================================
+
+    const {
+        roadmap: aiRoadmap,
+        loading: loadingRoadmap,
+        error: roadmapError,
+    } = useAiRoadmap({
+        active: showResults && Boolean(results),
+        careerName: selectedCareerName,
+        matchScore: results?.matchScore ?? 0,
+        skillGaps: results?.skillGaps ?? [],
+        strongSkills: results?.strongSkills ?? [],
+        education: selectedEducation,
+    });
+
+    // =====================================================
     // STEPPER STATE
     // =====================================================
 
@@ -375,6 +393,9 @@ function App() {
                         results={results}
                         careerName={selectedCareerName}
                         onCopyShareLink={handleCopyShareLink}
+                        aiRoadmap={aiRoadmap}
+                        loadingRoadmap={loadingRoadmap}
+                        roadmapError={roadmapError}
                     />
                 )}
 

@@ -61,7 +61,7 @@ export default function MatchChart({
                     dominantBaseline="central"
                     fontSize={size * 0.24}
                     fontWeight="600"
-                    fill="#e2e8f0"
+                    fill="#0f172a"
                 >
                     {Math.round(score)}%
                 </text>

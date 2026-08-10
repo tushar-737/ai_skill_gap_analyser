@@ -45,7 +45,7 @@ export default function SkillListCard({
                         >
                             <div>
                                 <strong>
-                                    {skill.skill}
+                                    {skill.name}
                                 </strong>
 
                                 <span>
@@ -84,7 +84,7 @@ export default function SkillListCard({
                             {isGap && (
                                 <div className="learn-links">
                                     {getLearningLinks(
-                                        skill.skill
+                                        skill.name
                                     ).map((link) => (
                                         <a
                                             key={link.url}

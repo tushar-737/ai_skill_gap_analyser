@@ -16,12 +16,13 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 // GENERIC API REQUEST
 // =====================================================
 
-async function apiRequest(endpoint) {
+async function apiRequest(endpoint, options) {
 
     try {
 
         const response = await fetch(
-            `${API_BASE_URL}${endpoint}`
+            `${API_BASE_URL}${endpoint}`,
+            options
         );
 
         if (!response.ok) {
@@ -172,5 +173,41 @@ export async function getStatistics() {
     return apiRequest(
         "/api/statistics"
     );
+
+}
+
+
+// =====================================================
+// AI LEARNING ROADMAP
+// =====================================================
+
+export async function getAiRoadmap({
+    careerName,
+    matchScore,
+    skillGaps,
+    strongSkills,
+    education,
+}) {
+
+    return apiRequest("/api/ai/roadmap", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            career_name: careerName,
+            match_score: matchScore,
+            skill_gaps: skillGaps.map((skill) => ({
+                name: skill.name,
+                current: skill.current,
+                required: skill.required_level,
+                gap: skill.gap,
+            })),
+            strong_skills: strongSkills.map(
+                (skill) => skill.name
+            ),
+            education,
+        }),
+    });
 
 }
