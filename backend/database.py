@@ -6,10 +6,19 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 
 # =====================================================
-# LOAD ENVIRONMENT VARIABLES
+# LOAD ENVIRONMENT VARIABLES — robust for Workbench + uvicorn
+# Looks for backend/.env when running from repo root, and also
+# tries the current working directory's .env as fallback.
 # =====================================================
 
-load_dotenv()
+# Try backend/.env first (when `uvicorn backend.main:app` from repo root)
+_here = os.path.dirname(__file__)
+_backend_env = os.path.join(_here, ".env")
+if os.path.exists(_backend_env):
+    load_dotenv(dotenv_path=_backend_env, override=False)
+
+# Also try CWD .env (when running from backend/ dir or custom setup)
+load_dotenv(override=False)
 
 
 # =====================================================

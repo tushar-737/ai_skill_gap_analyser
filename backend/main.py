@@ -1022,6 +1022,9 @@ GEMINI_URL = (
     f"{GEMINI_MODEL}:generateContent"
 )
 
+# Debug helper — logs whether Gemini passkey is loaded (without printing the key)
+print(f"[Gemini] API key loaded: {'yes' if GEMINI_API_KEY else 'no'} ({len(GEMINI_API_KEY) if GEMINI_API_KEY else 0} chars), model={GEMINI_MODEL}")
+
 
 class SkillGapItem(BaseModel):
     name: str
