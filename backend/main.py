@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 
 import requests
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from pydantic import BaseModel, Field
@@ -58,7 +58,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -526,13 +526,20 @@ def get_statistics(
 
 
 # =====================================================
-# DEBUG DATABASE
+# DEBUG DATABASE — gated by DEBUG env
+# Never expose DB host/uuid in production
 # =====================================================
 
 @app.get("/api/debug-db")
 def debug_db(
     db: Session = Depends(get_db)
 ):
+
+    if os.getenv("DEBUG", "false").lower() != "true":
+        raise HTTPException(
+            status_code=404,
+            detail="Not found",
+        )
 
     try:
 
