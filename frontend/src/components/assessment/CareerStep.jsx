@@ -1,4 +1,4 @@
-export default function CareerStep({ careers = [], loading = false, disabled = false, value = "", onChange = () => {} }) {
+export default function CareerStep({ careers = [], loading = false, disabled = false, value = "", onChange = () => {}, onContinue, onBack, stepLabel = "Step 3 of 5" }) {
     return (
         <section className="assessment-step journey-card">
             <div className="journey-header">
@@ -6,19 +6,17 @@ export default function CareerStep({ careers = [], loading = false, disabled = f
                     💼
                 </div>
                 <div>
-                    <span className="journey-kicker">Step 3 — Target Career</span>
-                    <h2>Choose Your Target Career</h2>
-                    <p>Which career do you want to pursue?</p>
+                    <span className="journey-kicker">{stepLabel} — Target Career</span>
+                    <h2>What&apos;s your target career?</h2>
+                    <p>We&apos;ll compare your skills with the requirements of this career.</p>
                 </div>
                 <span className="journey-step-badge">3</span>
             </div>
 
             <div className="form-group">
-                <label htmlFor="career">Target Career</label>
+                <label htmlFor="career">Which role are you targeting?</label>
                 <select id="career" value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled || loading}>
-                    <option value="">
-                        {loading ? "Loading careers..." : disabled ? "Select a domain first" : "Select a career"}
-                    </option>
+                    <option value="">{loading ? "Loading careers..." : disabled ? "Select a domain first" : "Select a career"}</option>
                     {!loading &&
                         careers.map((career) => (
                             <option key={career.id} value={career.id}>
@@ -26,6 +24,15 @@ export default function CareerStep({ careers = [], loading = false, disabled = f
                             </option>
                         ))}
                 </select>
+            </div>
+
+            <div className="journey-actions">
+                <button type="button" className="secondary-button" onClick={onBack}>
+                    ← Back
+                </button>
+                <button type="button" className="analyze-button" style={{ maxWidth: 180, marginTop: 0 }} onClick={onContinue} disabled={!value || disabled}>
+                    Continue →
+                </button>
             </div>
         </section>
     );

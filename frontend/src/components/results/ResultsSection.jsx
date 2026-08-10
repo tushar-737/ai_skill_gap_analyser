@@ -28,6 +28,24 @@ export default function ResultsSection({ results, careerName, onCopyShareLink, a
                 ? "You have a foundation — focus on high-priority gaps."
                 : "You’re at the start — build fundamentals first.";
 
+    function handleDownload() {
+        const payload = {
+            career: careerName,
+            matchScore: results.matchScore,
+            readiness: results.readiness,
+            strongSkills: results.strongSkills,
+            skillGaps: results.skillGaps,
+            generatedAt: new Date().toISOString(),
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${(careerName || "career").replace(/\s+/g, "_")}_gap_analysis.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
     return (
         <section id="results" className="results-section">
             <div className="results-header">
@@ -42,9 +60,14 @@ export default function ResultsSection({ results, careerName, onCopyShareLink, a
                     <strong>{results.skillGaps[0]?.name || "your top gap"}</strong> — fix it first.
                 </p>
                 {onCopyShareLink && (
-                    <button className="share-button" onClick={handleShare} aria-label="Copy a link to this result">
-                        {copied ? "✓ Link Copied!" : "🔗 Share Result Link"}
-                    </button>
+                    <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 12, flexWrap: "wrap" }}>
+                        <button className="share-button" onClick={handleShare} aria-label="Copy a link to this result">
+                            {copied ? "✓ Link Copied!" : "🔗 Share Result Link"}
+                        </button>
+                        <button className="share-button" onClick={handleDownload} aria-label="Download results as JSON">
+                            ⬇ Download JSON
+                        </button>
+                    </div>
                 )}
             </div>
 
