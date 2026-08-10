@@ -48,7 +48,6 @@ export default function StatsSection() {
                     </div>
                 ))}
             </div>
-            {!loading && stats && <p className="stats-hint">Live counts from MySQL Workbench via <code>GET /api/statistics</code></p>}
         </section>
     );
 }
