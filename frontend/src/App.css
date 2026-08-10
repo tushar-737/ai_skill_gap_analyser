@@ -2821,3 +2821,317 @@
 .reset-bar span {
     color: #92400e;
 }
+
+/* =====================================================
+   PHASE 1 — Wizard flow, searchable, friendly UX
+===================================================== */
+
+/* Welcome back */
+.welcome-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 18px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #eef2ff, #f0fdf4);
+    border: 1px solid #c7d2fe;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.welcome-card h3 {
+    font-size: 16px;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
+
+.welcome-card p {
+    font-size: 13px;
+    color: #475569;
+    margin: 0;
+}
+
+.welcome-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Step 1 of 5 */
+.step-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 auto 10px;
+    max-width: 860px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+}
+
+.step-dots {
+    display: flex;
+    gap: 6px;
+}
+
+.step-dots .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    transition: 0.2s;
+}
+
+.step-dots .dot.filled {
+    background: #2563eb;
+}
+
+.step-dots .dot.active {
+    width: 22px;
+    border-radius: 999px;
+    background: #0f172a;
+}
+
+/* Clickable stepper */
+.step.clickable {
+    cursor: pointer;
+}
+
+.step.clickable:hover .step-circle {
+    transform: scale(1.08);
+}
+
+.step.clickable:focus-visible .step-circle {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+/* Wizard summary — previous steps as editable chips */
+.wizard-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    margin: 10px 0;
+    font-size: 13px;
+    color: #334155;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.wizard-summary:hover {
+    background: white;
+    border-color: #cbd5e1;
+}
+
+.wizard-summary strong {
+    color: #0f172a;
+}
+
+.wizard-summary em {
+    margin-left: auto;
+    color: #2563eb;
+    font-style: normal;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+/* Searchable education */
+.searchable-wrap {
+    position: relative;
+    margin-top: 4px;
+}
+
+.searchable-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #f8fafc;
+    transition: 0.2s;
+}
+
+.searchable-input:focus-within {
+    border-color: #2563eb;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.searchable-input input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.search-clear {
+    border: none;
+    background: #e2e8f0;
+    color: #475569;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.searchable-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    max-height: 260px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+    z-index: 20;
+    padding: 6px;
+}
+
+.searchable-section {
+    padding: 6px 10px 4px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.searchable-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0 6px 6px;
+}
+
+.searchable-pill {
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #4338ca;
+    border: 1px solid #e0e7ff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.searchable-pill:hover {
+    background: #e0e7ff;
+}
+
+.searchable-option {
+    width: 100%;
+    text-align: left;
+    padding: 9px 10px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.searchable-option:hover,
+.searchable-option.selected {
+    background: #f1f5f9;
+    color: #2563eb;
+}
+
+.searchable-empty {
+    padding: 12px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+/* Journey actions — Continue/Back row */
+.journey-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+/* Skill intro — explanation + scale + progress */
+.skill-intro {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 16px;
+    margin: 16px 0 8px;
+}
+
+.skill-intro h3 {
+    font-size: 15px;
+    color: #0f172a;
+    margin-bottom: 6px;
+}
+
+.skill-intro p {
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.5;
+    margin-bottom: 10px;
+}
+
+.skill-scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 600;
+    padding: 0 2px;
+    margin-bottom: 10px;
+}
+
+.skill-progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #334155;
+}
+
+.skill-progress-track {
+    flex: 1;
+    height: 8px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    overflow: hidden;
+}
+
+.skill-progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #2563eb, #7c3aed);
+    transition: width 0.5s ease;
+}
+
+.analyze-hint {
+    text-align: center;
+    margin-top: 14px;
+}
+
+.analyze-hint small {
+    display: block;
+    margin-top: 6px;
+    color: #64748b;
+    font-size: 12px;
+}
