@@ -65,8 +65,8 @@ export default function ResumeUploader({
                 <div>
                     <h2>Upload Resume (Optional)</h2>
                     <p>
-                        Upload a PDF/DOCX resume — we’ll extract your skills with AI (Gemini
-                        passkey on backend) and auto-fill the sliders. You can still edit
+                        Upload a PDF/DOCX resume — we’ll extract your skills with AI (Groq/Gemini
+                        passkey on backend, auto) and auto-fill the sliders. You can still edit
                         them before analyzing.
                     </p>
                 </div>
@@ -142,23 +142,27 @@ export default function ResumeUploader({
                 <div className="resume-result">
                     <div className="resume-result-header">
                         <h3>
-                            {result.gemini_used ? "✨ AI Extracted" : "🔍 Keyword Extracted"} —{" "}
+                            {result.gemini_used || result.ai_used ? "✨ AI Extracted" : "🔍 Keyword Extracted"} —{" "}
                             {result.extracted_skills?.length || 0} skills
                         </h3>
-                        <span className={`resume-badge ${result.gemini_used ? "ai" : "kw"}`}>
-                            {result.extraction_source === "gemini" ? "Gemini" : "Keyword"}
+                        <span className={`resume-badge ${result.gemini_used || result.ai_used ? "ai" : "kw"}`}>
+                            {result.extraction_source === "groq"
+                                ? "Groq"
+                                : result.extraction_source === "gemini"
+                                  ? "Gemini"
+                                  : "Keyword"}
                         </span>
                     </div>
 
                     {/* Quota / fallback banner */}
                     {result.extraction_source === "keyword" && result.gemini_attempted && result.fallback_reason === "quota" && (
                         <div className="error-message" style={{ background: "#fffbeb", borderColor: "#fde68a", color: "#92400e" }}>
-                            ⚠️ Gemini quota hit (429) — using Keyword fallback. Wait ~60s or switch <code>GET /api/resume/analyze</code> model in <code>backend/.env</code> to <code>gemini-1.5-flash</code>. Your upload was still saved to Workbench.
+                            ⚠️ AI quota hit (429) — using Keyword fallback. Wait ~60s, or add <code>GROQ_API_KEY</code> in <code>backend/.env</code> for higher free quota, or switch <code>GEMINI_MODEL</code> to <code>gemini-1.5-flash</code>. Your upload was still saved to Workbench.
                         </div>
                     )}
                     {result.extraction_source === "keyword" && result.gemini_attempted && result.fallback_reason === "invalid_key" && (
                         <div className="error-message">
-                            ⚠️ Gemini key invalid — check <code>GEMINI_API_KEY</code> in <code>backend/.env</code> (should be <code>AQ...</code> from AI Studio) and restart backend.
+                            ⚠️ AI key invalid — check <code>GROQ_API_KEY</code> or <code>GEMINI_API_KEY</code> in <code>backend/.env</code> (Groq: <code>gsk_...</code>, Gemini: <code>AQ...</code>) and restart backend.
                         </div>
                     )}
                     {result.extraction_source === "keyword" && result.gemini_attempted && result.fallback_reason === "error" && result.gemini_error && (
@@ -168,7 +172,7 @@ export default function ResumeUploader({
                     )}
                     {!result.gemini_attempted && result.extraction_source === "keyword" && (
                         <div className="error-message" style={{ background: "#f0fdf4", borderColor: "#bbf7d0", color: "#166534" }}>
-                            ℹ️ Running in offline Keyword mode (no GEMINI_API_KEY). Add it to <code>backend/.env</code> for AI levels.
+                            ℹ️ Running in offline Keyword mode (no AI key). Add <code>GROQ_API_KEY</code> or <code>GEMINI_API_KEY</code> to <code>backend/.env</code> for AI levels.
                         </div>
                     )}
 

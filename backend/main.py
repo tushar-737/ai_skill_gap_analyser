@@ -3,7 +3,7 @@ import json
 import re
 import io
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import requests
 
@@ -1022,8 +1022,14 @@ GEMINI_URL = (
     f"{GEMINI_MODEL}:generateContent"
 )
 
-# Debug helper — logs whether Gemini passkey is loaded (without printing the key)
-print(f"[Gemini] API key loaded: {'yes' if GEMINI_API_KEY else 'no'} ({len(GEMINI_API_KEY) if GEMINI_API_KEY else 0} chars), model={GEMINI_MODEL}")
+# Groq (OpenAI-compatible, faster + higher free quota)
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+AI_PROVIDER = os.getenv("AI_PROVIDER", "auto").lower().strip()  # auto | groq | gemini | keyword
+
+# Debug helper — logs which AI keys are loaded (without printing the key)
+print(f"[AI] provider={AI_PROVIDER} | Gemini: {'yes' if GEMINI_API_KEY else 'no'} ({len(GEMINI_API_KEY) if GEMINI_API_KEY else 0} chars, {GEMINI_MODEL}) | Groq: {'yes' if GROQ_API_KEY else 'no'} ({len(GROQ_API_KEY) if GROQ_API_KEY else 0} chars, {GROQ_MODEL})")
 
 # Simple in-memory cache + last-error tracking for quota UX
 # (resets on server restart — fine for free-tier demo)
@@ -1156,6 +1162,67 @@ def call_gemini_roadmap(payload: AiRoadmapRequest) -> Optional[dict]:
         return None
 
 
+_last_groq_roadmap_error: Optional[str] = None
+
+def _call_groq_roadmap(payload: AiRoadmapRequest) -> Optional[dict]:
+    global _last_groq_roadmap_error
+    if not GROQ_API_KEY:
+        _last_groq_roadmap_error = "no_key"
+        return None
+    try:
+        prompt = build_roadmap_prompt(payload)
+        resp = requests.post(
+            GROQ_URL,
+            headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
+            json={
+                "model": GROQ_MODEL,
+                "messages": [
+                    {"role": "system", "content": "You are a career mentor. Return ONLY valid JSON matching: {\"summary\": \"...\", \"steps\": [{\"title\": \"...\", \"description\": \"...\", \"skills\": [...], \"resources\": [{\"name\": \"...\", \"type\": \"...\"}]}]}"},
+                    {"role": "user", "content": prompt},
+                ],
+                "temperature": 0.3,
+                "max_tokens": 900,
+                "response_format": {"type": "json_object"},
+            },
+            timeout=20,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        content = data["choices"][0]["message"]["content"]
+        parsed = json.loads(content)
+        if "summary" in parsed and "steps" in parsed:
+            parsed["source"] = "groq"
+            _last_groq_roadmap_error = None
+            return parsed
+        return None
+    except Exception as e:
+        _last_groq_roadmap_error = str(e)
+        print("GROQ ROADMAP ERROR:", e)
+        return None
+
+
+def _call_ai_roadmap(payload: AiRoadmapRequest) -> Optional[dict]:
+    order = []
+    if AI_PROVIDER == "groq":
+        order = ["groq", "gemini"]
+    elif AI_PROVIDER == "gemini":
+        order = ["gemini", "groq"]
+    elif AI_PROVIDER == "keyword":
+        return None
+    else:  # auto
+        order = ["groq", "gemini"]
+    for p in order:
+        if p == "groq" and GROQ_API_KEY:
+            r = _call_groq_roadmap(payload)
+            if r:
+                return r
+        if p == "gemini" and GEMINI_API_KEY:
+            r = call_gemini_roadmap(payload)
+            if r:
+                return r
+    return None
+
+
 def fallback_roadmap(payload: AiRoadmapRequest) -> dict:
     # Rule-based backup — same shape as the AI response, so the
     # frontend renders identically either way.
@@ -1223,10 +1290,15 @@ def fallback_roadmap(payload: AiRoadmapRequest) -> dict:
 
 @app.post("/api/ai/roadmap")
 def get_ai_roadmap(payload: AiRoadmapRequest):
-    roadmap = call_gemini_roadmap(payload)
+    roadmap = _call_ai_roadmap(payload)
 
     if roadmap is None:
-        roadmap = fallback_roadmap(payload)
+        # _call_ai_roadmap already tried groq->gemini; if still None, fallback
+        # Keep old direct call as ultimate fallback for error tracking
+        if not roadmap:
+            roadmap = call_gemini_roadmap(payload)
+        if roadmap is None:
+            roadmap = fallback_roadmap(payload)
 
     return roadmap
 
@@ -1396,6 +1468,100 @@ def _call_gemini_resume_extract(
         return None
 
 
+# --- Groq resume extract (OpenAI-compatible, no lxml, faster quota) ---
+_last_groq_resume_error: Optional[str] = None
+
+def _call_groq_resume_extract(
+    resume_text: str,
+    known_skills: List[models.Skill],
+) -> Optional[dict]:
+    global _last_groq_resume_error
+    if not GROQ_API_KEY:
+        _last_groq_resume_error = "no_key"
+        return None
+    if not resume_text or len(resume_text.strip()) < 20:
+        _last_groq_resume_error = "text_too_short"
+        return None
+
+    skill_names = [s.name for s in known_skills[:80]]
+    skills_hint = ", ".join(skill_names) if skill_names else "Python, JavaScript, SQL, React, etc."
+    truncated = resume_text[:8000]
+
+    prompt = (
+        "You are a resume parser for a skill-gap analyzer. Extract candidate skills from the resume below. "
+        "For each skill estimate proficiency 0-100 based on evidence. Only include skills explicitly or strongly implied. "
+        f"Prefer these known skill names when possible: {skills_hint}\n\n"
+        f"Resume text:\n'''{truncated}'''\n\n"
+        "Return ONLY valid JSON: {\"skills\": [{\"name\": \"Python\", \"inferred_level\": 80, \"evidence\": \"3 years Python\"}], \"summary\": \"One sentence summary\"}"
+    )
+
+    try:
+        resp = requests.post(
+            GROQ_URL,
+            headers={
+                "Authorization": f"Bearer {GROQ_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": GROQ_MODEL,
+                "messages": [
+                    {"role": "system", "content": "You are a JSON-only resume parser. Return valid JSON only."},
+                    {"role": "user", "content": prompt},
+                ],
+                "temperature": 0.2,
+                "max_tokens": 800,
+                "response_format": {"type": "json_object"},
+            },
+            timeout=25,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        content = data["choices"][0]["message"]["content"]
+        parsed = json.loads(content)
+        if "skills" in parsed and isinstance(parsed["skills"], list):
+            parsed["source"] = "groq"
+            _last_groq_resume_error = None
+            return parsed
+        return None
+    except Exception as e:
+        _last_groq_resume_error = str(e)
+        print("GROQ RESUME ERROR:", e)
+        return None
+
+
+def _call_ai_resume_extract(
+    resume_text: str,
+    known_skills: List[models.Skill],
+) -> Tuple[Optional[dict], Optional[str]]:
+    """Try providers in order based on AI_PROVIDER; returns (result, source_or_error)."""
+    # auto: groq -> gemini -> keyword
+    order = []
+    if AI_PROVIDER == "groq":
+        order = ["groq", "gemini"]
+    elif AI_PROVIDER == "gemini":
+        order = ["gemini", "groq"]
+    elif AI_PROVIDER == "keyword":
+        return (None, "keyword_forced")
+    else:  # auto
+        order = ["groq", "gemini"]
+
+    for provider in order:
+        if provider == "groq" and GROQ_API_KEY:
+            r = _call_groq_resume_extract(resume_text, known_skills)
+            if r and r.get("skills"):
+                return (r, "groq")
+            # if groq failed with quota, continue to next provider
+            if _last_groq_resume_error and "429" in _last_groq_resume_error:
+                continue
+            # if groq returned None but not quota, still try gemini
+        if provider == "gemini" and GEMINI_API_KEY:
+            r = _call_gemini_resume_extract(resume_text, known_skills)
+            if r and r.get("skills"):
+                return (r, "gemini")
+
+    return (None, _last_groq_resume_error or _last_gemini_resume_error or "no_ai")
+
+
 def _keyword_extract(
     resume_text: str,
     known_skills: List[models.Skill],
@@ -1506,12 +1672,12 @@ async def analyze_resume(
         print("DB SKILLS LOAD ERROR:", e)
         known_skills = []
 
-    # --- Try Gemini, fallback to keyword ---
-    gemini_result = _call_gemini_resume_extract(raw_text, known_skills)
-    if gemini_result and gemini_result.get("skills"):
-        raw_skills = gemini_result["skills"]
-        source = "gemini"
-        summary = gemini_result.get("summary", "")
+    # --- Try AI (Groq -> Gemini), fallback to keyword ---
+    ai_result, ai_source = _call_ai_resume_extract(raw_text, known_skills)
+    if ai_result and ai_result.get("skills"):
+        raw_skills = ai_result["skills"]
+        source = ai_result.get("source", ai_source or "groq")
+        summary = ai_result.get("summary", "")
     else:
         kw = _keyword_extract(raw_text, known_skills)
         raw_skills = kw["skills"]
@@ -1637,14 +1803,19 @@ async def analyze_resume(
             pass
 
     # --- Quota/attempt info for frontend banner ---
-    gemini_attempted = bool(GEMINI_API_KEY)
+    gemini_attempted = bool(GEMINI_API_KEY or GROQ_API_KEY)
     fallback_reason = None
-    gemini_error = _last_gemini_resume_error
+    # Prefer the most recent error from whichever provider was tried
+    gemini_error = _last_groq_resume_error or _last_gemini_resume_error
+    if AI_PROVIDER == "gemini":
+        gemini_error = _last_gemini_resume_error
+    elif AI_PROVIDER == "groq":
+        gemini_error = _last_groq_resume_error
     if gemini_attempted and source == "keyword" and gemini_error:
         low = gemini_error.lower()
         if "429" in gemini_error or "too many requests" in low or "quota" in low or "resource_exhausted" in low:
             fallback_reason = "quota"
-        elif "api_key" in low or "api key" in low or "permission" in low:
+        elif "api_key" in low or "api key" in low or "permission" in low or "invalid" in low:
             fallback_reason = "invalid_key"
         else:
             fallback_reason = "error"
@@ -1656,7 +1827,8 @@ async def analyze_resume(
         "text_length": len(raw_text),
         "text_preview": raw_text[:800],
         "extraction_source": source,
-        "gemini_used": source == "gemini",
+        "gemini_used": source in ("gemini", "groq"),
+        "ai_used": source in ("gemini", "groq"),
         "gemini_attempted": gemini_attempted,
         "fallback_reason": fallback_reason,
         "gemini_error": gemini_error if fallback_reason else None,
