@@ -23,6 +23,293 @@
 
 
 /* =====================================================
+   HEADER
+===================================================== */
+
+.header {
+    width: min(1100px, 92%);
+    margin: 0 auto;
+    padding: 22px 0 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+}
+
+.brand-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #2563eb;
+    color: white;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+.brand-highlight {
+    color: #2563eb;
+}
+
+.subtitle {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+
+/* =====================================================
+   HERO
+===================================================== */
+
+.hero {
+    width: min(1100px, 92%);
+    margin: 0 auto;
+    padding: 48px 32px 36px;
+    text-align: center;
+    background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 55%, #ffffff 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.hero h1 {
+    margin: 14px 0 12px;
+    font-size: 42px;
+    line-height: 1.1;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.03em;
+}
+
+.hero h1 span {
+    display: block;
+    background: linear-gradient(90deg, #2563eb, #06b6d4);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.hero p {
+    max-width: 640px;
+    margin: 0 auto;
+    color: #475569;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+.footer {
+    margin-top: 50px;
+    border-top: 1px solid #e2e8f0;
+    background: white;
+    padding: 22px 0;
+}
+
+.footer-container {
+    width: min(1100px, 92%);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    color: #64748b;
+    font-size: 13px;
+}
+
+.footer-container p {
+    margin: 0;
+}
+
+
+/* =====================================================
+   ASSESSMENT STEP (alias of assessment-section)
+   — the JSX uses assessment-step, legacy CSS used
+   assessment-section; keep both in sync.
+===================================================== */
+
+.assessment-step {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 32px;
+    margin: 24px 0;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.assessment-step h2 {
+    font-size: 22px;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
+
+.assessment-step > p,
+.step-header p {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.step-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 8px;
+}
+
+.step-header .step-number {
+    flex-shrink: 0;
+}
+
+.step-header h2 {
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+.step-header p {
+    margin: 0;
+}
+
+
+/* =====================================================
+   SKILLS RATER
+===================================================== */
+
+.skills-rater {
+    /* uses assessment-step base */
+}
+
+.skills-list {
+    display: grid;
+    gap: 14px;
+    margin-top: 22px;
+}
+
+.skill-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.skill-info label {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.skill-info span {
+    font-weight: 700;
+    color: #2563eb;
+    font-size: 14px;
+    min-width: 46px;
+    text-align: right;
+}
+
+.analyze-button {
+    margin-top: 24px;
+    width: 100%;
+    max-width: 320px;
+    padding: 14px 22px;
+    border: none;
+    border-radius: 12px;
+    background: #2563eb;
+    color: white;
+    font-weight: 700;
+    font-size: 15px;
+    transition: 0.2s;
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+}
+
+.analyze-button:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+.analyze-button:active {
+    transform: translateY(0);
+}
+
+
+/* =====================================================
+   PRIORITY CARD (alias)
+===================================================== */
+
+.priority-card {
+    /* uses result-card base — no extra rules needed */
+}
+
+
+/* =====================================================
+   LOADING SCREEN
+===================================================== */
+
+.loading-screen {
+    min-height: 60vh;
+    display: grid;
+    place-items: center;
+    gap: 14px;
+    padding: 60px 20px;
+    text-align: center;
+    color: #64748b;
+}
+
+.loader {
+    width: 36px;
+    height: 36px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .loader {
+        animation: none;
+        border-top-color: #e2e8f0;
+    }
+}
+
+
+/* =====================================================
+   ERROR MESSAGE (alias of error-banner for older JSX)
+===================================================== */
+
+.error-message {
+    margin: 20px 0;
+    padding: 14px 18px;
+    border-radius: 10px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+}
+
+
+/* =====================================================
    MAIN CONTAINER
 ===================================================== */
 
