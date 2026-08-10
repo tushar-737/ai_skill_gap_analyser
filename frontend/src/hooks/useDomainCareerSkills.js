@@ -1,66 +1,67 @@
 import { useEffect, useState } from "react";
-
 import { getCareersWithSkillsByDomain } from "../api/api";
 
-// =====================================================
-// ALL CAREERS WITH SKILLS FOR THE SELECTED DOMAIN
-// =====================================================
-//
-// Used to compute alternative career recommendations.
-// Refetches whenever the domain changes.
-
 export function useDomainCareerSkills(selectedDomain) {
-    const [domainCareerSkills, setDomainCareerSkills] =
-        useState([]);
-    const [loading, setLoading] = useState(false);
+const [domainCareerSkills, setDomainCareerSkills] =
+useState([]);
 
-    useEffect(() => {
-        if (!selectedDomain) {
-            setDomainCareerSkills([]);
-            setLoading(false);
-            return;
-        }
+```
+const [loading, setLoading] = useState(false);
 
-        let cancelled = false;
+useEffect(() => {
+    if (!selectedDomain) {
+        setDomainCareerSkills([]);
+        setLoading(false);
+        return;
+    }
 
-        async function load() {
-            try {
-                setLoading(true);
+    let cancelled = false;
 
-                const data =
-                    await getCareersWithSkillsByDomain(
-                        Number(selectedDomain)
-                    );
+    async function load() {
+        try {
+            setLoading(true);
 
-                if (cancelled) return;
-
-                if (!Array.isArray(data)) {
-                    throw new Error(
-                        "Invalid career recommendations response"
-                    );
-                }
-
-                setDomainCareerSkills(data);
-            } catch (error) {
-                console.error(
-                    "CAREER RECOMMENDATIONS ERROR:",
-                    error
+            const data =
+                await getCareersWithSkillsByDomain(
+                    Number(selectedDomain)
                 );
 
-                if (!cancelled) {
-                    setDomainCareerSkills([]);
-                }
-            } finally {
-                if (!cancelled) setLoading(false);
+            if (cancelled) return;
+
+            if (!Array.isArray(data)) {
+                throw new Error(
+                    "Invalid career recommendations response"
+                );
+            }
+
+            setDomainCareerSkills(data);
+        } catch (error) {
+            console.error(
+                "CAREER RECOMMENDATIONS ERROR:",
+                error
+            );
+
+            if (!cancelled) {
+                setDomainCareerSkills([]);
+            }
+        } finally {
+            if (!cancelled) {
+                setLoading(false);
             }
         }
+    }
 
-        load();
+    load();
 
-        return () => {
-            cancelled = true;
-        };
-    }, [selectedDomain]);
+    return () => {
+        cancelled = true;
+    };
+}, [selectedDomain]);
 
-    return { domainCareerSkills, loading };
+return {
+    domainCareerSkills,
+    loading,
+};
+```
+
 }

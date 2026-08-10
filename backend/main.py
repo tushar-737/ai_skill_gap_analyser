@@ -1,13 +1,17 @@
 import os
 
+from typing import Dict
+
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+
+from pydantic import BaseModel
 
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
-from database import get_db
-import models
+from .database import get_db
+from . import models
 
 
 # =====================================================
@@ -24,10 +28,6 @@ app = FastAPI(
 # =====================================================
 # CORS
 # =====================================================
-#
-# Origins are read from the ALLOWED_ORIGINS env var (comma-separated)
-# so the API works from any frontend host (dev, preview, production).
-# Falls back to the common local Vite dev-server origins.
 
 ALLOWED_ORIGINS = [
     origin.strip()
@@ -42,13 +42,9 @@ ALLOWED_ORIGINS = [
 
 app.add_middleware(
     CORSMiddleware,
-
     allow_origins=ALLOWED_ORIGINS,
-
     allow_credentials=True,
-
     allow_methods=["*"],
-
     allow_headers=["*"],
 )
 
@@ -59,7 +55,6 @@ app.add_middleware(
 
 @app.get("/")
 def home():
-
     return {
         "message": "AI Skill Gap Analyzer API is running",
         "status": "success"
@@ -74,7 +69,6 @@ def home():
 def database_test(
     db: Session = Depends(get_db)
 ):
-
     try:
 
         result = db.execute(
@@ -377,6 +371,7 @@ def get_careers_with_skills_by_domain(
     ]
 
     if not skill_ids:
+
         return [
             {
                 "id": career.id,
@@ -507,7 +502,7 @@ def debug_db(
 
     career_count = db.execute(
         text(
-            "SELECT COUNT(*) AS total FROM careers"
+            "SELECT COUNT(*) AS total FROM careers_v2"
         )
     ).scalar()
 
@@ -528,4 +523,212 @@ def debug_db(
             dict(career)
             for career in careers
         ]
+    }
+
+
+# =====================================================
+# SKILL GAP ANALYSIS REQUEST MODEL
+# =====================================================
+
+class SkillGapRequest(BaseModel):
+    skills: Dict[int, int]
+
+
+# =====================================================
+# SKILL GAP ANALYSIS
+# =====================================================
+
+@app.post("/api/analyze")
+def analyze_skill_gap(
+    request: SkillGapRequest,
+    db: Session = Depends(get_db)
+):
+
+    """
+    Analyze the user's skills against
+    all career skill requirements.
+
+    Request example:
+
+    {
+        "skills": {
+            "1": 80,
+            "2": 70,
+            "3": 60,
+            "7": 75,
+            "19": 65
+        }
+    }
+
+    Key   = skill_id
+    Value = user's skill level (0-100)
+    """
+
+    careers = (
+        db.query(models.Career)
+        .order_by(models.Career.id)
+        .all()
+    )
+
+    results = []
+
+    # -------------------------------------------------
+    # Analyze every career
+    # -------------------------------------------------
+
+    for career in careers:
+
+        requirements = (
+            db.query(
+                models.CareerSkillRequirement,
+                models.Skill
+            )
+            .join(
+                models.Skill,
+                models.Skill.id
+                == models.CareerSkillRequirement.skill_id
+            )
+            .filter(
+                models.CareerSkillRequirement.career_id
+                == career.id
+            )
+            .all()
+        )
+
+        # Skip careers that have no skill requirements
+        if not requirements:
+            continue
+
+        total_required = 0
+        total_user = 0
+
+        gaps = []
+
+        # -------------------------------------------------
+        # Compare each required skill
+        # -------------------------------------------------
+
+        for requirement, skill in requirements:
+
+            required_level = requirement.required_level
+
+            # User skill level
+            user_level = request.skills.get(
+                skill.id,
+                0
+            )
+
+            # Keep level between 0 and 100
+            user_level = max(
+                0,
+                min(
+                    100,
+                    int(user_level)
+                )
+            )
+
+            # Required level
+            required_level = max(
+                0,
+                min(
+                    100,
+                    int(required_level)
+                )
+            )
+
+            # Add required level
+            total_required += required_level
+
+            # Only count achieved level up to requirement
+            total_user += min(
+                user_level,
+                required_level
+            )
+
+            # Calculate skill gap
+            gap = max(
+                0,
+                required_level - user_level
+            )
+
+            # Only add missing skills
+            if gap > 0:
+
+                gaps.append(
+                    {
+                        "skill_id": skill.id,
+                        "skill": skill.name,
+                        "category": skill.category,
+                        "user_level": user_level,
+                        "required_level": required_level,
+                        "gap": gap
+                    }
+                )
+
+        # -------------------------------------------------
+        # Calculate career match
+        # -------------------------------------------------
+
+        if total_required > 0:
+
+            match_percentage = (
+                total_user /
+                total_required
+            ) * 100
+
+        else:
+
+            match_percentage = 0
+
+        # -------------------------------------------------
+        # Sort gaps
+        # Largest gap first
+        # -------------------------------------------------
+
+        gaps.sort(
+            key=lambda x: x["gap"],
+            reverse=True
+        )
+
+        results.append(
+            {
+                "career_id": career.id,
+                "career": career.name,
+                "description": career.description,
+                "match_percentage": round(
+                    match_percentage,
+                    2
+                ),
+                "skill_gaps": gaps
+            }
+        )
+
+    # =================================================
+    # SORT CAREERS BY MATCH
+    # =================================================
+
+    results.sort(
+        key=lambda x: x["match_percentage"],
+        reverse=True
+    )
+
+    # =================================================
+    # TOP RECOMMENDATION
+    # =================================================
+
+    top_career = (
+        results[0]
+        if results
+        else None
+    )
+
+    # =================================================
+    # RESPONSE
+    # =================================================
+
+    return {
+        "status": "success",
+        "total_careers_analyzed": len(results),
+        "recommended_career": top_career,
+        "recommendations": results
     }
