@@ -964,6 +964,204 @@
 
 
 /* =====================================================
+   RESUME UPLOADER — Gemini passkey + Workbench
+===================================================== */
+
+.resume-uploader {
+    /* uses assessment-step */
+}
+
+.resume-dropzone {
+    margin-top: 18px;
+    padding: 28px 20px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 16px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: 0.2s;
+    text-align: left;
+}
+
+.resume-dropzone:hover,
+.resume-dropzone.drag-over {
+    border-color: #2563eb;
+    background: #eff6ff;
+    transform: translateY(-1px);
+}
+
+.resume-dropzone.has-file {
+    border-color: #16a34a;
+    background: #f0fdf4;
+}
+
+.resume-dropzone-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    background: white;
+    border: 1px solid #e2e8f0;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.resume-dropzone strong {
+    display: block;
+    color: #0f172a;
+    font-size: 15px;
+    margin-bottom: 2px;
+}
+
+.resume-dropzone small {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.resume-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+.secondary-button {
+    padding: 14px 22px;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+    background: white;
+    color: #334155;
+    font-weight: 700;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.secondary-button:hover {
+    border-color: #2563eb;
+    color: #2563eb;
+}
+
+.resume-result {
+    margin-top: 18px;
+    padding: 18px;
+    border-radius: 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.resume-result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.resume-result-header h3 {
+    font-size: 16px;
+    color: #0f172a;
+    margin: 0;
+}
+
+.resume-badge {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.resume-badge.ai {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.resume-badge.kw {
+    background: #e0e7ff;
+    color: #4338ca;
+}
+
+.resume-summary {
+    color: #475569;
+    font-size: 14px;
+    margin: 6px 0 10px;
+}
+
+.resume-gap-preview {
+    font-size: 13px;
+    color: #334155;
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 8px 12px;
+    border-radius: 999px;
+    display: inline-block;
+    margin-bottom: 12px;
+}
+
+.resume-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.resume-skill-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.resume-skill-chip em {
+    font-style: normal;
+    color: #2563eb;
+    font-weight: 700;
+}
+
+.resume-details {
+    margin-top: 10px;
+    font-size: 13px;
+}
+
+.resume-details summary {
+    cursor: pointer;
+    color: #2563eb;
+    font-weight: 600;
+}
+
+.resume-preview {
+    margin-top: 8px;
+    padding: 12px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #334155;
+    white-space: pre-wrap;
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+.resume-workbench-hint {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #64748b;
+    font-family: ui-monospace, monospace;
+}
+
+
+/* =====================================================
    RESPONSIVE
 ===================================================== */
 
