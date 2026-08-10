@@ -1,36 +1,33 @@
 const steps = [
-    "Education",
-    "Domain",
-    "Career",
-    "Skills",
-    "Results",
+    { label: "Education", short: "Education" },
+    { label: "Domain", short: "Domain" },
+    { label: "Career", short: "Career" },
+    { label: "Skills", short: "Skills" },
+    { label: "Results", short: "Results" },
 ];
 
-function Stepper({ activeStep = 0 }) {
+export default function Stepper({ activeStep = 0 }) {
     return (
-        <div className="stepper">
-            {steps.map((step, index) => (
-                <div
-                    key={step}
-                    className={`step ${
-                        index === activeStep
-                            ? "active"
-                            : index < activeStep
-                            ? "completed"
-                            : ""
-                    }`}
-                >
-                    <div className="step-number">
-                        {index + 1}
-                    </div>
+        <div className="stepper" role="navigation" aria-label="Progress">
+            {steps.map((step, index) => {
+                const isCompleted = index < activeStep;
+                const isActive = index === activeStep;
+                const state = isActive ? "active" : isCompleted ? "completed" : "upcoming";
 
-                    <div className="step-label">
-                        {step}
+                return (
+                    <div key={step.label} className={`step ${state}`}>
+                        <div className="step-connector" aria-hidden>
+                            {index > 0 && <span className="step-line" />}
+                        </div>
+                        <div className="step-node">
+                            <div className="step-circle" aria-hidden>
+                                {isCompleted ? "✓" : index + 1}
+                            </div>
+                            <span className="step-label">{step.label}</span>
+                        </div>
                     </div>
-                </div>
-            ))}
+                );
+            })}
         </div>
     );
 }
-
-export default Stepper;
