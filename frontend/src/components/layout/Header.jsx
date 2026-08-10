@@ -1,4 +1,7 @@
-export default function Header() {
+import { useState } from "react";
+
+export default function Header({ onReset }) {
+    const [open, setOpen] = useState(false);
     return (
         <header className="header">
             <div className="header-inner">
@@ -7,12 +10,34 @@ export default function Header() {
                     SkillGap
                     <span className="brand-highlight">AI</span>
                 </div>
-                <nav className="nav-links" aria-label="Primary">
-                    <a href="#how-it-works">How It Works</a>
-                    <a href="#about">About</a>
-                    <a href="#assessment" className="nav-cta">
+
+                <button
+                    type="button"
+                    className="hamburger"
+                    aria-label={open ? "Close menu" : "Open menu"}
+                    aria-expanded={open}
+                    onClick={() => setOpen((v) => !v)}
+                >
+                    <span />
+                    <span />
+                    <span />
+                </button>
+
+                <nav className={`nav-links ${open ? "open" : ""}`} aria-label="Primary">
+                    <a href="#how-it-works" onClick={() => setOpen(false)}>
+                        How It Works
+                    </a>
+                    <a href="#about" onClick={() => setOpen(false)}>
+                        About
+                    </a>
+                    <a href="#assessment" className="nav-cta" onClick={() => setOpen(false)}>
                         Start Analysis
                     </a>
+                    {onReset && (
+                        <button type="button" className="nav-reset" onClick={() => { setOpen(false); onReset(); }}>
+                            ↺ Reset
+                        </button>
+                    )}
                 </nav>
             </div>
         </header>
