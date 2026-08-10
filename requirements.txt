@@ -6,6 +6,7 @@ pydantic-core==2.46.4
 starlette==1.6.0
 anyio==4.14.2
 h11==0.16.0
+python-multipart==0.0.18
 
 # Database
 SQLAlchemy==2.0.51
@@ -25,6 +26,9 @@ annotated-types==0.8.0
 annotated-doc==0.0.5
 typing-extensions==4.16.0
 typing-inspection==0.4.2
+
+# Resume parsing (docx parsed via stdlib zipfile — no lxml needed)
+pypdf==4.3.1
 
 # Misc (click pulled by uvicorn)
 click==8.3.1

@@ -1,11 +1,13 @@
 import os
 import json
-
+import re
+import io
+from datetime import datetime
 from typing import Dict, List, Optional
 
 import requests
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 
 from pydantic import BaseModel, Field
@@ -1213,3 +1215,436 @@ def get_ai_roadmap(payload: AiRoadmapRequest):
         roadmap = fallback_roadmap(payload)
 
     return roadmap
+
+
+# =====================================================
+# RESUME UPLOAD & ANALYSIS — Passkey-protected Gemini
+# =====================================================
+#
+# Flow:
+# 1) User uploads PDF/DOCX/TXT via frontend dropzone (multipart)
+# 2) Backend extracts raw_text (pypdf / python-docx / plain)
+# 3) If GEMINI_API_KEY (your passkey) is set, we call Gemini to
+#    extract structured skills + inferred levels 0-100.
+#    Otherwise we fall back to keyword matching against skills_v2.
+# 4) Result is mapped to { skill_id, name, inferred_level } so the
+#    frontend can auto-fill the SkillsRater sliders.
+# 5) Optionally persisted to `resume_analyses` for Workbench.
+#    Workbench users can then `SELECT * FROM resume_analyses`.
+
+MAX_RESUME_BYTES = 5 * 1024 * 1024  # 5 MB
+ALLOWED_RESUME_EXTS = {".pdf", ".docx", ".doc", ".txt"}
+
+
+def _extract_text_from_bytes(data: bytes, filename: str) -> str:
+    name = (filename or "").lower()
+    # --- PDF ---
+    if name.endswith(".pdf"):
+        try:
+            from pypdf import PdfReader
+
+            reader = PdfReader(io.BytesIO(data))
+            parts = []
+            for page in reader.pages:
+                try:
+                    parts.append(page.extract_text() or "")
+                except Exception:
+                    continue
+            text_out = "\n".join(parts).strip()
+            if text_out:
+                return text_out
+        except Exception as e:
+            print("PDF EXTRACT ERROR:", e)
+        # fallback: try to decode as text (scanned PDFs will be empty)
+        try:
+            return data.decode("utf-8", errors="ignore")
+        except Exception:
+            return ""
+
+    # --- DOCX / DOC (docx parsed without lxml: zip + stdlib xml) ---
+    if name.endswith(".docx") or name.endswith(".doc"):
+        # Try python-docx first if available (needs lxml), else fallback to zip+xml
+        try:
+            import docx  # type: ignore
+
+            doc = docx.Document(io.BytesIO(data))
+            txt = "\n".join(p.text for p in doc.paragraphs).strip()
+            if txt:
+                return txt
+        except Exception as e:
+            print("DOCX (python-docx) Extract note:", e)
+        # Fallback: unzip .docx and parse word/document.xml with stdlib
+        try:
+            import zipfile
+            import xml.etree.ElementTree as ET
+
+            with zipfile.ZipFile(io.BytesIO(data)) as z:
+                xml_bytes = z.read("word/document.xml")
+            # Word uses w:t for text nodes
+            root = ET.fromstring(xml_bytes)
+            ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+            texts = [node.text for node in root.findall(".//w:t", ns) if node.text]
+            txt = "\n".join(texts).strip()
+            if txt:
+                return txt
+        except Exception as e:
+            print("DOCX (zip) Extract note:", e)
+        # Old .doc (not zip) — fall back to text decode
+        try:
+            return data.decode("utf-8", errors="ignore")
+        except Exception:
+            return ""
+
+    # --- TXT / fallback ---
+    try:
+        return data.decode("utf-8", errors="ignore").strip()
+    except Exception:
+        return data.decode("latin-1", errors="ignore").strip()
+
+
+RESUME_SKILLS_JSON_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "skills": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "inferred_level": {"type": "integer"},
+                    "evidence": {"type": "string"},
+                },
+                "required": ["name", "inferred_level"],
+            },
+        },
+        "summary": {"type": "string"},
+    },
+    "required": ["skills"],
+}
+
+
+def _call_gemini_resume_extract(
+    resume_text: str,
+    known_skills: List[models.Skill],
+) -> Optional[dict]:
+    """Ask Gemini to map resume text -> skills with inferred 0-100 levels."""
+    if not GEMINI_API_KEY:
+        return None
+    if not resume_text or len(resume_text.strip()) < 20:
+        return None
+
+    # Build known-skills hint (limit to 80 to keep prompt small)
+    skill_names = [s.name for s in known_skills[:80]]
+    skills_hint = ", ".join(skill_names) if skill_names else "Python, JavaScript, SQL, React, etc."
+
+    # Truncate resume for token limits
+    truncated = resume_text[:8000]
+
+    prompt = (
+        "You are a resume parser for a skill-gap analyzer. Extract the candidate's "
+        "technical and soft skills from the resume text below. For each skill, estimate "
+        "a proficiency level 0-100 based on evidence (projects, years, keywords like "
+        "'expert', '3 years', etc.). Only return skills that are explicitly or strongly "
+        "implied in the resume.\n\n"
+        f"Known skills in our system (prefer these names when possible): {skills_hint}\n\n"
+        f"Resume text:\n'''{truncated}'''\n\n"
+        "Return JSON with: { skills: [{ name, inferred_level (0-100), evidence (short phrase from resume) }], summary (1 sentence about the candidate) }"
+    )
+
+    try:
+        resp = requests.post(
+            GEMINI_URL,
+            params={"key": GEMINI_API_KEY},
+            json={
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {
+                    "response_mime_type": "application/json",
+                    "response_schema": RESUME_SKILLS_JSON_SCHEMA,
+                },
+            },
+            timeout=25,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        text_out = data["candidates"][0]["content"]["parts"][0]["text"]
+        parsed = json.loads(text_out)
+        if "skills" in parsed and isinstance(parsed["skills"], list):
+            parsed["source"] = "gemini"
+            return parsed
+        return None
+    except Exception as e:
+        print("GEMINI RESUME ERROR:", e)
+        return None
+
+
+def _keyword_extract(
+    resume_text: str,
+    known_skills: List[models.Skill],
+) -> dict:
+    """Fallback: simple case-insensitive substring match against skills_v2."""
+    lower = resume_text.lower()
+    out = []
+    for skill in known_skills:
+        name = skill.name or ""
+        if not name:
+            continue
+        # allow multi-word match: must find whole phrase case-insensitive
+        # For short names like "R", require word boundaries to avoid false positives
+        n = name.lower().strip()
+        if len(n) <= 1:
+            continue
+        # Special aliases: handle "Node.js" -> "node"
+        found = False
+        if n in lower:
+            # For very short tokens, enforce word boundary
+            if len(n) <= 2:
+                found = bool(re.search(rf"\b{re.escape(n)}\b", lower))
+            else:
+                found = True
+        # Also check aliases
+        if not found:
+            aliases = {
+                "js": "javascript",
+                "ts": "typescript",
+                "nodejs": "node.js",
+                "node": "node.js",
+                "powerbi": "power bi",
+                "ml": "machine learning",
+            }
+            # if alias matches, map to canonical
+            if n in aliases.values():
+                alias_keys = [k for k, v in aliases.items() if v == n]
+                for ak in alias_keys:
+                    if ak in lower:
+                        found = True
+                        break
+        if found:
+            # Infer level by frequency + context clues
+            count = lower.count(n)
+            # Base 60, +5 per extra mention up to 75, check for "expert/advanced/lead"
+            level = 60 + min((count - 1) * 5, 15)
+            if re.search(rf"{re.escape(n)}.*(expert|advanced|lead|senior|proficient)", lower[:2000]):
+                level = min(85, level + 10)
+            if re.search(rf"(expert|advanced).* {re.escape(n)}", lower[:2000]):
+                level = min(85, level + 10)
+            out.append({
+                "name": skill.name,
+                "inferred_level": min(95, level),
+                "evidence": f"Found '{skill.name}' in resume",
+                "skill_id": skill.id,
+                "category": skill.category,
+            })
+        # Also handle alias hits where resume has alias but skill is canonical
+    # If nothing found, return empty but keep source marker
+    return {"skills": out, "source": "keyword"}
+
+
+@app.post("/api/resume/analyze")
+async def analyze_resume(
+    file: UploadFile = File(...),
+    target_career_id: Optional[int] = Form(None),
+    education: Optional[str] = Form(None),
+    db: Session = Depends(get_db),
+):
+    # --- Validate ---
+    if not file or not file.filename:
+        raise HTTPException(status_code=400, detail="No file uploaded")
+
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext not in ALLOWED_RESUME_EXTS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type {ext}. Use PDF, DOCX or TXT.",
+        )
+
+    data = await file.read()
+    if not data:
+        raise HTTPException(status_code=400, detail="Empty file")
+    if len(data) > MAX_RESUME_BYTES:
+        raise HTTPException(status_code=400, detail="File too large (max 5 MB)")
+
+    # --- Extract text ---
+    raw_text = _extract_text_from_bytes(data, file.filename).strip()
+    if not raw_text or len(raw_text) < 20:
+        raise HTTPException(
+            status_code=422,
+            detail="Could not extract text from resume. If it's a scanned PDF, try exporting to searchable PDF or DOCX.",
+        )
+
+    # --- Load known skills from Workbench DB ---
+    try:
+        known_skills: List[models.Skill] = db.query(models.Skill).order_by(models.Skill.name).all()
+    except Exception as e:
+        print("DB SKILLS LOAD ERROR:", e)
+        known_skills = []
+
+    # --- Try Gemini, fallback to keyword ---
+    gemini_result = _call_gemini_resume_extract(raw_text, known_skills)
+    if gemini_result and gemini_result.get("skills"):
+        raw_skills = gemini_result["skills"]
+        source = "gemini"
+        summary = gemini_result.get("summary", "")
+    else:
+        kw = _keyword_extract(raw_text, known_skills)
+        raw_skills = kw["skills"]
+        source = kw["source"]
+        summary = f"Keyword-matched {len(raw_skills)} skills from resume."
+
+    # --- Map to canonical skill_ids and clamp levels ---
+    # Build name -> skill lookup (case-insensitive)
+    name_to_skill = {s.name.lower(): s for s in known_skills}
+    # also alias map
+    alias_to_canonical = {
+        "js": "javascript", "ts": "typescript", "nodejs": "node.js",
+        "node": "node.js", "tailwind css": "tailwind", "ml": "machine learning",
+        "dl": "deep learning", "powerbi": "power bi", "scikit-learn": "machine learning",
+    }
+
+    mapped = []
+    seen = set()
+    for item in raw_skills:
+        raw_name = (item.get("name") or "").strip()
+        if not raw_name:
+            continue
+        key = raw_name.lower().strip()
+        # resolve alias
+        if key in alias_to_canonical:
+            key = alias_to_canonical[key]
+        skill = name_to_skill.get(key)
+        # fuzzy: try to find by lower contains if exact not found
+        if not skill:
+            # try direct lower match among known
+            for k, v in name_to_skill.items():
+                if k == key or key in k or k in key:
+                    skill = v
+                    break
+        if not skill:
+            # unknown skill not in DB — still return but without skill_id
+            level = int(item.get("inferred_level") or 60)
+            level = max(0, min(100, level))
+            mapped.append({
+                "skill_id": None,
+                "name": raw_name,
+                "category": None,
+                "inferred_level": level,
+                "evidence": item.get("evidence", ""),
+            })
+            continue
+        if skill.id in seen:
+            continue
+        seen.add(skill.id)
+        level = int(item.get("inferred_level") or 60)
+        level = max(0, min(100, level))
+        mapped.append({
+            "skill_id": skill.id,
+            "name": skill.name,
+            "category": skill.category,
+            "inferred_level": level,
+            "evidence": item.get("evidence", "")[:120],
+        })
+
+    # If Gemini returned none but keyword also none, still provide empty list
+    # Sort by inferred_level desc so strongest first
+    mapped.sort(key=lambda x: x["inferred_level"], reverse=True)
+
+    # --- Also compute career gap if target_career_id provided ---
+    gap_preview = None
+    if target_career_id:
+        try:
+            career = db.query(models.Career).filter(models.Career.id == int(target_career_id)).first()
+            if career:
+                reqs = (
+                    db.query(models.Skill, models.CareerSkillRequirement.required_level)
+                    .join(models.CareerSkillRequirement, models.Skill.id == models.CareerSkillRequirement.skill_id)
+                    .filter(models.CareerSkillRequirement.career_id == career.id)
+                    .all()
+                )
+                # build dict skill_id -> inferred
+                inferred_map = {m["skill_id"]: m["inferred_level"] for m in mapped if m["skill_id"] is not None}
+                total_req = 0
+                total_have = 0
+                gaps = []
+                for skill, req in reqs:
+                    have = inferred_map.get(skill.id, 0)
+                    total_req += max(0, min(100, int(req)))
+                    total_have += min(have, int(req))
+                    gaps.append({
+                        "skill_id": skill.id,
+                        "name": skill.name,
+                        "required_level": int(req),
+                        "inferred_level": have,
+                        "gap": max(0, int(req) - have),
+                    })
+                match = round((total_have / total_req * 100) if total_req else 0, 2)
+                gaps.sort(key=lambda x: x["gap"], reverse=True)
+                gap_preview = {
+                    "career_id": career.id,
+                    "career_name": career.name,
+                    "match_percentage": match,
+                    "gaps": gaps[:5],
+                }
+        except Exception as e:
+            print("GAP PREVIEW ERROR:", e)
+
+    # --- Persist for Workbench (best-effort, don't fail upload if DB down) ---
+    saved_id = None
+    try:
+        row = models.ResumeAnalysis(
+            file_name=file.filename,
+            file_size=len(data),
+            raw_text=raw_text[:10000],  # cap for DB
+            extracted_skills={"skills": mapped, "summary": summary, "source": source},
+            target_career_id=int(target_career_id) if target_career_id else None,
+            extraction_source=source,
+        )
+        db.add(row)
+        db.commit()
+        db.refresh(row)
+        saved_id = row.id
+    except Exception as e:
+        print("RESUME SAVE ERROR (Workbench table maybe missing — run workbench/init.sql):", e)
+        try:
+            db.rollback()
+        except Exception:
+            pass
+
+    return {
+        "status": "success",
+        "file_name": file.filename,
+        "file_size": len(data),
+        "text_length": len(raw_text),
+        "text_preview": raw_text[:800],
+        "extraction_source": source,
+        "gemini_used": source == "gemini",
+        "summary": summary,
+        "extracted_skills": mapped,
+        # Frontend can directly do: setSkillLevels({...mapped levels})
+        "inferred_levels": {str(m["skill_id"]): m["inferred_level"] for m in mapped if m["skill_id"] is not None},
+        "gap_preview": gap_preview,
+        "saved_id": saved_id,
+        "workbench_hint": "SELECT * FROM resume_analyses ORDER BY created_at DESC LIMIT 5;" if saved_id else "Run backend/workbench/init.sql in MySQL Workbench to enable saving.",
+    }
+
+
+@app.get("/api/resume/history")
+def resume_history(
+    limit: int = 10,
+    db: Session = Depends(get_db),
+):
+    limit = max(1, min(50, int(limit or 10)))
+    try:
+        rows = db.query(models.ResumeAnalysis).order_by(models.ResumeAnalysis.created_at.desc()).limit(limit).all()
+        return [
+            {
+                "id": r.id,
+                "file_name": r.file_name,
+                "file_size": r.file_size,
+                "target_career_id": r.target_career_id,
+                "extraction_source": r.extraction_source,
+                "created_at": r.created_at.isoformat() if r.created_at else None,
+                "extracted_skills": r.extracted_skills,
+            }
+            for r in rows
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"History unavailable (run workbench/init.sql): {e}")

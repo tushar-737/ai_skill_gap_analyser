@@ -1,9 +1,13 @@
+from datetime import datetime
+
 from sqlalchemy import (
     Column,
     Integer,
     String,
     Text,
     ForeignKey,
+    DateTime,
+    JSON,
 )
 
 from .database import Base
@@ -176,4 +180,49 @@ class CareerSkillRequirement(Base):
         Integer,
         nullable=False,
         default=50
+    )
+
+
+# =====================================================
+# RESUME ANALYSIS — stores uploaded resume parses
+# Uses JSON for extracted_skills so it works in MySQL 5.7+
+# Workbench: forward-engineer via workbench/init.sql
+# =====================================================
+
+class ResumeAnalysis(Base):
+
+    __tablename__ = "resume_analyses"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    file_name = Column(
+        String(255),
+        nullable=False
+    )
+
+    file_size = Column(Integer)
+
+    raw_text = Column(Text)
+
+    # { skills: [{ skill_id, name, inferred_level, evidence }], ... }
+    extracted_skills = Column(JSON)
+
+    # Optional: which career the user was targeting at upload time
+    target_career_id = Column(
+        Integer,
+        ForeignKey("careers_v2.id"),
+        nullable=True
+    )
+
+    # How the extraction was done: "gemini" | "keyword" | "hybrid"
+    extraction_source = Column(String(20), default="keyword")
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False
     )

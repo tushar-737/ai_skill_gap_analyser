@@ -25,6 +25,7 @@ import EducationStep from "./components/assessment/EducationStep";
 import DomainStep from "./components/assessment/DomainStep";
 import CareerStep from "./components/assessment/CareerStep";
 import SkillsRater from "./components/assessment/SkillsRater";
+import ResumeUploader from "./components/assessment/ResumeUploader";
 import ResultsSection from "./components/results/ResultsSection";
 import CareerRecommendations from "./components/recommendations/CareerRecommendations";
 
@@ -38,6 +39,8 @@ function App() {
     const [selectedCareer, setSelectedCareer] = useState("");
     const [skillLevels, setSkillLevels] = useState({});
     const [showResults, setShowResults] = useState(false);
+    // Resume-inferred levels: { [skill_id]: level } — applied when career loads
+    const [resumeInfo, setResumeInfo] = useState(null);
 
     // =====================================================
     // ERROR STATE
@@ -71,6 +74,7 @@ function App() {
     // (the effect below consumes it), so they aren't reset.
 
     const pendingLevelsRef = useRef(null);
+    const pendingResumeRef = useRef(null);
 
     useEffect(() => {
         const shared = decodeShareState(window.location.hash);
@@ -134,20 +138,36 @@ function App() {
         if (requiredSkills.length === 0) return;
 
         const pending = pendingLevelsRef.current;
+        // Resume-inferred levels take precedence over 0, but share-link levels win over resume
+        const resumePending = pendingResumeRef.current;
+
         const base =
             pending && String(pending.c) === String(selectedCareer)
                 ? pending.l
                 : {};
 
+        const hasShareBase = pending && String(pending.c) === String(selectedCareer);
+        const resumeBase = !hasShareBase && resumePending ? resumePending : {};
+
         const initialLevels = {};
 
         requiredSkills.forEach((skill) => {
-            initialLevels[skill.skill_id] =
-                Number(base[skill.skill_id]) || 0;
+            const sid = String(skill.skill_id);
+            if (hasShareBase && base[sid] !== undefined) {
+                initialLevels[skill.skill_id] = Number(base[sid]) || 0;
+            } else if (resumeBase[sid] !== undefined) {
+                initialLevels[skill.skill_id] = Number(resumeBase[sid]) || 0;
+            } else if (base[sid] !== undefined) {
+                initialLevels[skill.skill_id] = Number(base[sid]) || 0;
+            } else {
+                initialLevels[skill.skill_id] = 0;
+            }
         });
 
         setSkillLevels(initialLevels);
         pendingLevelsRef.current = null;
+        // keep resume pending for next career change? clear only after consumed once
+        if (resumePending && !hasShareBase) pendingResumeRef.current = null;
 
         if (pending && pending.showResults) {
             setShowResults(true);
@@ -155,6 +175,45 @@ function App() {
             setShowResults(false);
         }
     }, [selectedCareer, requiredSkills]);
+
+    // =====================================================
+    // RESUME HANDLER — auto-fill sliders from extracted skills
+    // =====================================================
+
+    function handleResumeExtracted(data) {
+        setResumeInfo(data);
+        setError("");
+        // Store inferred levels for next career load or apply immediately
+        if (data?.inferred_levels) {
+            const inferred = data.inferred_levels; // { "1": 70, ... }
+            if (selectedCareer && requiredSkills.length > 0) {
+                // Apply now to current career's skills
+                setSkillLevels((prev) => {
+                    const next = { ...prev };
+                    requiredSkills.forEach((s) => {
+                        const key = String(s.skill_id);
+                        if (inferred[key] !== undefined) {
+                            next[s.skill_id] = Number(inferred[key]);
+                        }
+                    });
+                    return next;
+                });
+                setFormError(
+                    `✓ Resume parsed (${data.extraction_source === "gemini" ? "Gemini AI" : "keyword"}): ${data.extracted_skills?.length || 0} skills auto-filled. Adjust sliders and click Analyze.`
+                );
+                // Scroll to SkillsRater
+                setTimeout(() => {
+                    document.querySelector(".skills-rater")?.scrollIntoView({ behavior: "smooth" });
+                }, 200);
+            } else {
+                // No career yet — stash for when career loads
+                pendingResumeRef.current = inferred;
+                setFormError(
+                    `✓ Resume parsed: ${data.extracted_skills?.length || 0} skills found. Now select a domain & career to see them auto-filled.`
+                );
+            }
+        }
+    }
 
     // =====================================================
     // HANDLERS
@@ -368,6 +427,17 @@ function App() {
                     disabled={!selectedDomain}
                     value={selectedCareer}
                     onChange={handleCareerChange}
+                />
+
+                {/* =========================================
+                    RESUME UPLOAD — AI extracts skills to auto-fill
+                    Works with Gemini passkey on backend + Workbench
+                ========================================= */}
+
+                <ResumeUploader
+                    selectedCareer={selectedCareer}
+                    selectedEducation={selectedEducation}
+                    onExtracted={handleResumeExtracted}
                 />
 
                 {/* =========================================

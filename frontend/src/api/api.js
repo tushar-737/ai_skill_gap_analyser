@@ -211,3 +211,40 @@ export async function getAiRoadmap({
     });
 
 }
+
+
+// =====================================================
+// RESUME UPLOAD — passkey-protected Gemini on backend
+// =====================================================
+//
+// Upload a PDF/DOCX/TXT and get back extracted skills
+// mapped to your Workbench skills_v2 (with inferred_levels
+// that can auto-fill the SkillsRater).
+
+export async function uploadResume(file, { targetCareerId, education } = {}) {
+    const form = new FormData();
+    form.append("file", file);
+    if (targetCareerId) form.append("target_career_id", String(targetCareerId));
+    if (education) form.append("education", String(education));
+
+    const response = await fetch(`${API_BASE_URL}/api/resume/analyze`, {
+        method: "POST",
+        body: form,
+    });
+
+    if (!response.ok) {
+        // Try to surface the backend's detail message
+        let detail = `${response.status} ${response.statusText}`;
+        try {
+            const data = await response.json();
+            detail = data.detail || detail;
+        } catch {}
+        throw new Error(detail);
+    }
+
+    return await response.json();
+}
+
+export async function getResumeHistory(limit = 5) {
+    return apiRequest(`/api/resume/history?limit=${limit}`);
+}
