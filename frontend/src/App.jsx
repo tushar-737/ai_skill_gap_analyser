@@ -17,6 +17,9 @@ import { loadState, saveState } from "./lib/storage";
 
 import Header from "./components/layout/Header";
 import Hero from "./components/layout/Hero";
+import StatsSection from "./components/layout/StatsSection";
+import HowItWorks from "./components/layout/HowItWorks";
+import Architecture from "./components/layout/Architecture";
 import Footer from "./components/layout/Footer";
 import LoadingScreen from "./components/ui/LoadingScreen";
 import ErrorBanner from "./components/ui/ErrorBanner";
@@ -442,6 +445,7 @@ function App() {
 
             <Header />
             <Hero />
+            <StatsSection />
 
             <main
                 id="main-content"
@@ -547,6 +551,8 @@ function App() {
                 )}
             </main>
 
+            <HowItWorks />
+            <Architecture />
             <Footer />
         </div>
     );
