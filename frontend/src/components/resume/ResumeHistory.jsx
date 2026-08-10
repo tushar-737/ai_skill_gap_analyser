@@ -5,6 +5,8 @@ export default function ResumeHistory({ onReload = () => {}, refreshKey = 0 }) {
     const [rows, setRows] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [expanded, setExpanded] = useState(false);
+    const [collapsed, setCollapsed] = useState(false);
 
     async function load() {
         setLoading(true);
@@ -28,70 +30,93 @@ export default function ResumeHistory({ onReload = () => {}, refreshKey = 0 }) {
     if (error) return <div className="error-message">{error}</div>;
     if (rows.length === 0)
         return (
-            <div className="assessment-step">
-                <h3 style={{ marginBottom: 6 }}>📂 My Uploads</h3>
-                <p className="empty-message" style={{ color: "#64748b" }}>
+            <div className="assessment-step" style={{ padding: "18px 20px" }}>
+                <h3 style={{ marginBottom: 4, fontSize: 15 }}>📂 My Uploads</h3>
+                <p className="empty-message" style={{ color: "#64748b", fontSize: 13 }}>
                     No resumes yet. Upload one above — it will be saved to Workbench <code>resume_analyses</code> and appear here.
                 </p>
             </div>
         );
 
+    const visible = expanded ? rows : rows.slice(0, 3);
+
     return (
-        <section className="assessment-step">
-            <div className="step-header" style={{ justifyContent: "space-between" }}>
-                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                    <span className="step-number">🗂️</span>
+        <section className="assessment-step" style={{ padding: "18px 20px" }}>
+            <div className="step-header" style={{ justifyContent: "space-between", marginBottom: 8 }}>
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                    <span className="step-number" style={{ width: 32, height: 32, fontSize: 13 }}>
+                        🗂️
+                    </span>
                     <div>
-                        <h2>My Uploads — Workbench History</h2>
-                        <p>Last {rows.length} resumes from MySQL Workbench (`resume_analyses`). Click to reload.</p>
+                        <h2 style={{ fontSize: 16, marginBottom: 2 }}>My Uploads — Workbench</h2>
+                        <p style={{ fontSize: 12, margin: 0 }}>
+                            {rows.length} saved {rows.length === 1 ? "resume" : "resumes"} •{" "}
+                            <button
+                                type="button"
+                                onClick={() => setCollapsed((v) => !v)}
+                                style={{ background: "none", border: "none", color: "#2563eb", fontWeight: 700, cursor: "pointer", padding: 0, fontSize: 12 }}
+                            >
+                                {collapsed ? "Expand" : "Collapse"}
+                            </button>
+                        </p>
                     </div>
                 </div>
-                <button type="button" className="secondary-button" onClick={load} style={{ padding: "8px 14px" }}>
-                    ↻ Refresh
+                <button type="button" className="secondary-button" onClick={load} style={{ padding: "6px 12px", fontSize: 13 }}>
+                    ↻
                 </button>
             </div>
 
-            <div className="resume-history-list">
-                {rows.map((r) => {
-                    const skills = r.extracted_skills?.skills || [];
-                    const isAi = r.extraction_source === "groq" || r.extraction_source === "gemini";
-                    return (
-                        <div key={r.id} className="resume-history-item">
-                            <div className="resume-history-main">
-                                <strong title={r.file_name}>
-                                    #{r.id} — {r.file_name}
-                                </strong>
-                                <small>
-                                    {new Date(r.created_at).toLocaleString()} • {r.file_size ? `${(r.file_size / 1024).toFixed(1)} KB` : ""} •{" "}
-                                    <span className={`resume-badge ${isAi ? "ai" : "kw"}`} style={{ fontSize: 10 }}>
-                                        {r.extraction_source === "groq" ? "Groq" : r.extraction_source === "gemini" ? "Gemini" : "Keyword"}
-                                    </span>
-                                </small>
-                                <div className="resume-skills" style={{ marginTop: 6 }}>
-                                    {skills.slice(0, 6).map((s) => (
-                                        <span key={s.skill_id || s.name} className="resume-skill-chip" title={s.evidence || ""}>
-                                            {s.name} <em>{s.inferred_level}%</em>
-                                        </span>
-                                    ))}
-                                    {skills.length > 6 && <small style={{ color: "#64748b" }}>+{skills.length - 6} more</small>}
+            {!collapsed && (
+                <>
+                    <div className="resume-history-list compact">
+                        {visible.map((r) => {
+                            const skills = r.extracted_skills?.skills || [];
+                            const isAi = r.extraction_source === "groq" || r.extraction_source === "gemini";
+                            return (
+                                <div key={r.id} className="resume-history-item compact">
+                                    <div className="resume-history-main">
+                                        <strong title={r.file_name} style={{ fontSize: 13 }}>
+                                            #{r.id} — {r.file_name.length > 28 ? r.file_name.slice(0, 28) + "…" : r.file_name}
+                                        </strong>
+                                        <small style={{ fontSize: 11 }}>
+                                            {new Date(r.created_at).toLocaleDateString()} • {isAi ? "AI" : "KW"} • {skills.length} skills
+                                            <span className={`resume-badge ${isAi ? "ai" : "kw"}`} style={{ fontSize: 9, marginLeft: 6, padding: "2px 6px" }}>
+                                                {r.extraction_source === "groq" ? "Groq" : r.extraction_source === "gemini" ? "Gemini" : "Keyword"}
+                                            </span>
+                                        </small>
+                                        <div className="resume-skills" style={{ marginTop: 4, gap: 4 }}>
+                                            {skills.slice(0, 3).map((s) => (
+                                                <span key={s.skill_id || s.name} className="resume-skill-chip" style={{ fontSize: 11, padding: "3px 8px" }} title={s.evidence || ""}>
+                                                    {s.name} <em>{s.inferred_level}%</em>
+                                                </span>
+                                            ))}
+                                            {skills.length > 3 && <small style={{ color: "#64748b", fontSize: 11 }}>+{skills.length - 3}</small>}
+                                        </div>
+                                    </div>
+                                    <button type="button" className="secondary-button" onClick={() => onReload(r)} style={{ padding: "6px 10px", fontSize: 12, whiteSpace: "nowrap" }}>
+                                        ↩
+                                    </button>
                                 </div>
-                            </div>
-                            <button
-                                type="button"
-                                className="secondary-button"
-                                onClick={() => onReload(r)}
-                                style={{ padding: "8px 14px", whiteSpace: "nowrap" }}
-                            >
-                                ↩ Reload
-                            </button>
-                        </div>
-                    );
-                })}
-            </div>
+                            );
+                        })}
+                    </div>
 
-            <p className="resume-workbench-hint" style={{ marginTop: 12 }}>
-                Workbench: <code>SELECT * FROM resume_analyses ORDER BY created_at DESC LIMIT 5;</code>
-            </p>
+                    {rows.length > 3 && (
+                        <button
+                            type="button"
+                            onClick={() => setExpanded((v) => !v)}
+                            className="secondary-button"
+                            style={{ marginTop: 10, width: "100%", padding: "8px", fontSize: 13 }}
+                        >
+                            {expanded ? `Show less` : `Show all ${rows.length} →`}
+                        </button>
+                    )}
+
+                    <p className="resume-workbench-hint" style={{ marginTop: 8, fontSize: 11 }}>
+                        Workbench: <code>SELECT * FROM resume_analyses LIMIT 5;</code>
+                    </p>
+                </>
+            )}
         </section>
     );
 }

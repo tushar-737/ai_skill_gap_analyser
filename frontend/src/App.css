@@ -2782,3 +2782,21 @@
         grid-template-columns: 1fr 1fr;
     }
 }
+
+/* Compact history — after fix for too long */
+.resume-history-list.compact {
+    max-height: 260px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+.resume-history-item.compact {
+    padding: 10px 12px;
+    gap: 10px;
+}
+.resume-history-list.compact::-webkit-scrollbar {
+    width: 6px;
+}
+.resume-history-list.compact::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
