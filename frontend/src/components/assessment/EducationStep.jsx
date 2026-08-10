@@ -1,42 +1,50 @@
-import StepCard from "./StepCard";
 
-// STEP 1 — EDUCATION BACKGROUND
-
-export default function EducationStep({
-    education,
-    value,
-    onChange,
+function EducationStep({
+    education = [],
+    value = "",
+    onChange = () => {},
 }) {
     return (
-        <StepCard
-            number="01"
-            title="Education Background"
-            description="Select your current degree or educational program."
-        >
-            <select
-                aria-label="Education program"
-                value={value}
-                onChange={(event) =>
-                    onChange(event.target.value)
-                }
-            >
-                <option value="">
-                    Select your education
-                </option>
+        <section className="assessment-step">
+            <div className="step-header">
+                <span className="step-number">1</span>
 
-                {education.map((item) => (
-                    <option
-                        key={item.id}
-                        value={item.id}
-                    >
-                        {item.name}
+                <div>
+                    <h2>Select Your Education</h2>
+                    <p>
+                        Choose your current education level or program.
+                    </p>
+                </div>
+            </div>
 
-                        {item.level
-                            ? ` — ${item.level}`
-                            : ""}
+            <div className="form-group">
+                <label htmlFor="education">
+                    Education
+                </label>
+
+                <select
+                    id="education"
+                    value={value}
+                    onChange={(event) =>
+                        onChange(event.target.value)
+                    }
+                >
+                    <option value="">
+                        Select your education
                     </option>
-                ))}
-            </select>
-        </StepCard>
+
+                    {education.map((item) => (
+                        <option
+                            key={item.id}
+                            value={item.id}
+                        >
+                            {item.name}
+                        </option>
+                    ))}
+                </select>
+            </div>
+        </section>
     );
 }
+
+export default EducationStep;

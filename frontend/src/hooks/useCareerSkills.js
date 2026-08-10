@@ -2,77 +2,75 @@ import { useEffect, useState } from "react";
 import { getCareerSkills } from "../api/api";
 
 export function useCareerSkills(
-selectedCareer,
-onError = () => {}
+    selectedCareer,
+    onError = () => {}
 ) {
-const [requiredSkills, setRequiredSkills] = useState([]);
-const [loading, setLoading] = useState(false);
+    const [requiredSkills, setRequiredSkills] = useState([]);
+    const [loading, setLoading] = useState(false);
 
-```
-useEffect(() => {
-    if (!selectedCareer) {
-        setRequiredSkills([]);
-        setLoading(false);
-        return;
-    }
+    useEffect(() => {
+        if (!selectedCareer) {
+            setRequiredSkills([]);
+            setLoading(false);
+            return;
+        }
 
-    let cancelled = false;
+        let cancelled = false;
 
-    async function load() {
-        try {
-            setLoading(true);
-            onError("");
+        async function loadSkills() {
+            try {
+                setLoading(true);
+                onError("");
 
-            const data = await getCareerSkills(
-                Number(selectedCareer)
-            );
+                const data = await getCareerSkills(
+                    Number(selectedCareer)
+                );
 
-            if (cancelled) return;
+                if (cancelled) return;
 
-            if (!Array.isArray(data)) {
+                if (!Array.isArray(data)) {
+                    console.error(
+                        "Invalid skills response:",
+                        data
+                    );
+
+                    setRequiredSkills([]);
+                    onError(
+                        "Invalid skills data received from backend."
+                    );
+
+                    return;
+                }
+
+                setRequiredSkills(data);
+            } catch (error) {
                 console.error(
-                    "Invalid skills response:",
-                    data
+                    "ERROR LOADING CAREER SKILLS:",
+                    error
                 );
 
-                setRequiredSkills([]);
-                onError(
-                    "Invalid skills data received from backend."
-                );
-                return;
-            }
-
-            setRequiredSkills(data);
-        } catch (error) {
-            console.error(
-                "ERROR LOADING CAREER SKILLS:",
-                error
-            );
-
-            if (!cancelled) {
-                setRequiredSkills([]);
-                onError(
-                    "Unable to load skills for this career."
-                );
-            }
-        } finally {
-            if (!cancelled) {
-                setLoading(false);
+                if (!cancelled) {
+                    setRequiredSkills([]);
+                    onError(
+                        "Unable to load skills for this career."
+                    );
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
+                }
             }
         }
-    }
 
-    load();
+        loadSkills();
 
-    return () => {
-        cancelled = true;
+        return () => {
+            cancelled = true;
+        };
+    }, [selectedCareer, onError]);
+
+    return {
+        requiredSkills,
+        loading,
     };
-}, [selectedCareer, onError]);
-
-return {
-    requiredSkills,
-    loading,
-};
-```
-
 }

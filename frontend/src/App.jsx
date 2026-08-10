@@ -304,7 +304,7 @@ function App() {
     // =====================================================
 
     return (
-        <div>
+        <div className="app">
             <a
                 className="skip-link"
                 href="#main-content"

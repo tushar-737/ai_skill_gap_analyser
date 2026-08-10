@@ -2,66 +2,63 @@ import { useEffect, useState } from "react";
 import { getCareersWithSkillsByDomain } from "../api/api";
 
 export function useDomainCareerSkills(selectedDomain) {
-const [domainCareerSkills, setDomainCareerSkills] =
-useState([]);
+    const [domainCareerSkills, setDomainCareerSkills] =
+        useState([]);
 
-```
-const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-useEffect(() => {
-    if (!selectedDomain) {
-        setDomainCareerSkills([]);
-        setLoading(false);
-        return;
-    }
+    useEffect(() => {
+        if (!selectedDomain) {
+            setDomainCareerSkills([]);
+            setLoading(false);
+            return;
+        }
 
-    let cancelled = false;
+        let cancelled = false;
 
-    async function load() {
-        try {
-            setLoading(true);
+        async function loadCareerSkills() {
+            try {
+                setLoading(true);
 
-            const data =
-                await getCareersWithSkillsByDomain(
-                    Number(selectedDomain)
+                const data =
+                    await getCareersWithSkillsByDomain(
+                        Number(selectedDomain)
+                    );
+
+                if (cancelled) return;
+
+                if (!Array.isArray(data)) {
+                    throw new Error(
+                        "Invalid career recommendations response"
+                    );
+                }
+
+                setDomainCareerSkills(data);
+            } catch (error) {
+                console.error(
+                    "CAREER RECOMMENDATIONS ERROR:",
+                    error
                 );
 
-            if (cancelled) return;
-
-            if (!Array.isArray(data)) {
-                throw new Error(
-                    "Invalid career recommendations response"
-                );
-            }
-
-            setDomainCareerSkills(data);
-        } catch (error) {
-            console.error(
-                "CAREER RECOMMENDATIONS ERROR:",
-                error
-            );
-
-            if (!cancelled) {
-                setDomainCareerSkills([]);
-            }
-        } finally {
-            if (!cancelled) {
-                setLoading(false);
+                if (!cancelled) {
+                    setDomainCareerSkills([]);
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
+                }
             }
         }
-    }
 
-    load();
+        loadCareerSkills();
 
-    return () => {
-        cancelled = true;
+        return () => {
+            cancelled = true;
+        };
+    }, [selectedDomain]);
+
+    return {
+        domainCareerSkills,
+        loading,
     };
-}, [selectedDomain]);
-
-return {
-    domainCareerSkills,
-    loading,
-};
-```
-
 }

@@ -2,60 +2,57 @@ import { useEffect, useState } from "react";
 import { getCareersByDomain } from "../api/api";
 
 export function useCareers(selectedDomain, onError = () => {}) {
-const [careers, setCareers] = useState([]);
-const [loading, setLoading] = useState(false);
+    const [careers, setCareers] = useState([]);
+    const [loading, setLoading] = useState(false);
 
-```
-useEffect(() => {
-    if (!selectedDomain) {
-        setCareers([]);
-        setLoading(false);
-        return;
-    }
+    useEffect(() => {
+        if (!selectedDomain) {
+            setCareers([]);
+            setLoading(false);
+            return;
+        }
 
-    let cancelled = false;
+        let cancelled = false;
 
-    async function load() {
-        try {
-            setLoading(true);
-            onError("");
+        async function loadCareers() {
+            try {
+                setLoading(true);
+                onError("");
 
-            const data = await getCareersByDomain(
-                Number(selectedDomain)
-            );
+                const data = await getCareersByDomain(
+                    Number(selectedDomain)
+                );
 
-            if (cancelled) return;
+                if (cancelled) return;
 
-            if (!Array.isArray(data)) {
-                throw new Error("Invalid careers response");
-            }
+                if (!Array.isArray(data)) {
+                    throw new Error("Invalid careers response");
+                }
 
-            setCareers(data);
-        } catch (error) {
-            console.error("CAREERS ERROR:", error);
+                setCareers(data);
+            } catch (error) {
+                console.error("CAREERS ERROR:", error);
 
-            if (!cancelled) {
-                setCareers([]);
-                onError("Unable to load careers.");
-            }
-        } finally {
-            if (!cancelled) {
-                setLoading(false);
+                if (!cancelled) {
+                    setCareers([]);
+                    onError("Unable to load careers.");
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
+                }
             }
         }
-    }
 
-    load();
+        loadCareers();
 
-    return () => {
-        cancelled = true;
+        return () => {
+            cancelled = true;
+        };
+    }, [selectedDomain, onError]);
+
+    return {
+        careers,
+        loading,
     };
-}, [selectedDomain, onError]);
-
-return {
-    careers,
-    loading,
-};
-```
-
 }

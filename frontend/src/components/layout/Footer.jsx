@@ -1,14 +1,18 @@
-export default function Footer() {
+function Footer() {
     return (
-        <footer>
-            <p>
-                AI Skill Gap Analyzer
-            </p>
+        <footer className="footer">
+            <div className="footer-container">
+                <p>
+                    © {new Date().getFullYear()} AI Skill Gap Analyzer.
+                    All rights reserved.
+                </p>
 
-            <span>
-                Full-Stack Career Intelligence
-                Platform
-            </span>
+                <p>
+                    Built with React, FastAPI & AI.
+                </p>
+            </div>
         </footer>
     );
 }
+
+export default Footer;

@@ -1,4 +1,11 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Text,
+    ForeignKey,
+)
+
 from .database import Base
 
 
@@ -10,7 +17,11 @@ class EducationCategory(Base):
 
     __tablename__ = "education_categories"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
 
     name = Column(
         String(100),
@@ -29,16 +40,26 @@ class EducationProgram(Base):
 
     __tablename__ = "education_programs"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
 
     category_id = Column(
         Integer,
-        ForeignKey("education_categories.id")
+        ForeignKey("education_categories.id"),
+        nullable=True
     )
 
-    name = Column(String(150), nullable=False)
+    name = Column(
+        String(150),
+        nullable=False
+    )
 
-    level = Column(String(50))
+    level = Column(
+        String(50)
+    )
 
     description = Column(Text)
 
@@ -51,7 +72,11 @@ class Domain(Base):
 
     __tablename__ = "domains"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
 
     name = Column(
         String(150),
@@ -70,18 +95,28 @@ class Career(Base):
 
     __tablename__ = "careers_v2"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
 
     domain_id = Column(
         Integer,
-        ForeignKey("domains.id")
+        ForeignKey("domains.id"),
+        nullable=True
     )
 
-    name = Column(String(150), nullable=False)
+    name = Column(
+        String(150),
+        nullable=False
+    )
 
     description = Column(Text)
 
-    average_level = Column(String(50))
+    average_level = Column(
+        String(50)
+    )
 
 
 # =====================================================
@@ -92,7 +127,11 @@ class Skill(Base):
 
     __tablename__ = "skills_v2"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
 
     name = Column(
         String(150),
@@ -100,7 +139,9 @@ class Skill(Base):
         nullable=False
     )
 
-    category = Column(String(100))
+    category = Column(
+        String(100)
+    )
 
     description = Column(Text)
 
@@ -113,16 +154,22 @@ class CareerSkillRequirement(Base):
 
     __tablename__ = "career_skill_requirements"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
 
     career_id = Column(
         Integer,
-        ForeignKey("careers_v2.id")
+        ForeignKey("careers_v2.id"),
+        nullable=False
     )
 
     skill_id = Column(
         Integer,
-        ForeignKey("skills_v2.id")
+        ForeignKey("skills_v2.id"),
+        nullable=False
     )
 
     required_level = Column(

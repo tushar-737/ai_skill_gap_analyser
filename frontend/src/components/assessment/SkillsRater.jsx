@@ -1,104 +1,90 @@
-import StepCard from "./StepCard";
 
-// STEP 4 — RATE YOUR SKILLS
-
-export default function SkillsRater({
-    skills,
-    levels,
-    loading,
-    onSkillChange,
-    onAnalyze,
+function SkillsRater({
+    skills = [],
+    levels = {},
+    loading = false,
+    onSkillChange = () => {},
+    onAnalyze = () => {},
 }) {
     return (
-        <StepCard
-            number="04"
-            title="Rate Your Skills"
-            description="Rate your current proficiency from 0 to 100."
-            className="skills-card"
-        >
-            {/* =============================================
-                SKILL LOADING / EMPTY STATES
-            ============================================= */}
+        <section className="assessment-step skills-rater">
+            <div className="step-header">
+                <span className="step-number">4</span>
+
+                <div>
+                    <h2>Rate Your Skills</h2>
+                    <p>
+                        Rate your current skill level from 0 to 100.
+                    </p>
+                </div>
+            </div>
 
             {loading ? (
-                <div className="skill-loading">
+                <p className="skill-loading">
                     Loading required skills...
-                </div>
+                </p>
             ) : skills.length === 0 ? (
-                <div className="skill-loading">
-                    No skills have been configured
-                    for this career yet.
-                </div>
+                <p className="skill-loading">
+                    No skills found for this career.
+                </p>
             ) : (
-                <div className="skills-list">
-                    {skills.map((skill) => (
-                        <div
-                            className="skill-row"
-                            key={skill.skill_id}
-                        >
-                            <div className="skill-info">
-                                <div>
-                                    <strong>
-                                        {skill.skill}
-                                    </strong>
+                <>
+                    <div className="skills-list">
+                        {skills.map((skill) => {
+                            const skillId = skill.skill_id;
 
-                                    <small>
-                                        {skill.category}
-                                    </small>
+                            const currentLevel =
+                                Number(levels[skillId]) || 0;
+
+                            return (
+                                <div
+                                    className="skill-item"
+                                    key={skillId}
+                                >
+                                    <div className="skill-info">
+                                        <label
+                                            htmlFor={`skill-${skillId}`}
+                                        >
+                                            {skill.name ||
+                                                skill.skill_name ||
+                                                `Skill ${skillId}`}
+                                        </label>
+
+                                        <span>
+                                            {currentLevel}%
+                                        </span>
+                                    </div>
+
+                                    <input
+                                        id={`skill-${skillId}`}
+                                        type="range"
+                                        min="0"
+                                        max="100"
+                                        step="5"
+                                        value={currentLevel}
+                                        onChange={(event) =>
+                                            onSkillChange(
+                                                skillId,
+                                                event.target.value
+                                            )
+                                        }
+                                    />
                                 </div>
+                            );
+                        })}
+                    </div>
 
-                                <span>
-                                    {levels[
-                                        skill.skill_id
-                                    ] || 0}
-                                    %
-                                </span>
-                            </div>
-
-                            <div className="skill-requirement">
-                                Required:{" "}
-                                {skill.required_level}
-                                %
-                            </div>
-
-                            <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                step="5"
-                                value={
-                                    levels[
-                                        skill.skill_id
-                                    ] || 0
-                                }
-                                onChange={(event) =>
-                                    onSkillChange(
-                                        skill.skill_id,
-                                        event.target.value
-                                    )
-                                }
-                            />
-                        </div>
-                    ))}
-                </div>
+                    <button
+                        type="button"
+                        className="analyze-button"
+                        onClick={onAnalyze}
+                    >
+                        Analyze My Skill Gap
+                    </button>
+                </>
             )}
-
-            {/* =============================================
-                ANALYZE BUTTON
-            ============================================= */}
-
-            <button
-                className="analyze-button"
-                aria-label="Analyze my skills"
-                onClick={onAnalyze}
-                disabled={
-                    loading || skills.length === 0
-                }
-            >
-                Analyze My Skills
-
-                <span>→</span>
-            </button>
-        </StepCard>
+        </section>
     );
 }
+
+export default SkillsRater;

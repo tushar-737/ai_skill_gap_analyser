@@ -1,74 +1,71 @@
 import { useEffect, useState } from "react";
 import {
-getEducationPrograms,
-getDomains,
+    getEducationPrograms,
+    getDomains,
 } from "../api/api";
 
 export function useInitialData(onError = () => {}) {
-const [education, setEducation] = useState([]);
-const [domains, setDomains] = useState([]);
-const [loading, setLoading] = useState(true);
+    const [education, setEducation] = useState([]);
+    const [domains, setDomains] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-```
-useEffect(() => {
-    let cancelled = false;
+    useEffect(() => {
+        let cancelled = false;
 
-    async function load() {
-        try {
-            setLoading(true);
-            onError("");
+        async function loadInitialData() {
+            try {
+                setLoading(true);
+                onError("");
 
-            const [
-                educationData,
-                domainData,
-            ] = await Promise.all([
-                getEducationPrograms(),
-                getDomains(),
-            ]);
+                const [
+                    educationData,
+                    domainData,
+                ] = await Promise.all([
+                    getEducationPrograms(),
+                    getDomains(),
+                ]);
 
-            if (cancelled) return;
+                if (cancelled) return;
 
-            setEducation(
-                Array.isArray(educationData)
-                    ? educationData
-                    : []
-            );
-
-            setDomains(
-                Array.isArray(domainData)
-                    ? domainData
-                    : []
-            );
-        } catch (error) {
-            console.error(
-                "INITIAL DATA ERROR:",
-                error
-            );
-
-            if (!cancelled) {
-                onError(
-                    "Unable to connect to the backend."
+                setEducation(
+                    Array.isArray(educationData)
+                        ? educationData
+                        : []
                 );
-            }
-        } finally {
-            if (!cancelled) {
-                setLoading(false);
+
+                setDomains(
+                    Array.isArray(domainData)
+                        ? domainData
+                        : []
+                );
+            } catch (error) {
+                console.error(
+                    "INITIAL DATA ERROR:",
+                    error
+                );
+
+                if (!cancelled) {
+                    onError(
+                        "Unable to connect to the backend."
+                    );
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
+                }
             }
         }
-    }
 
-    load();
+        loadInitialData();
 
-    return () => {
-        cancelled = true;
+        return () => {
+            cancelled = true;
+        };
+    }, [onError]);
+
+    return {
+        education,
+        domains,
+        loading,
     };
-}, [onError]);
-
-return {
-    education,
-    domains,
-    loading,
-};
-```
-
 }
