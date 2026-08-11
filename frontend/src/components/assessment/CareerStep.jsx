@@ -13,6 +13,7 @@ export default function CareerStep({
 }) {
     const [search, setSearch] = useState("");
     const [isOpen, setIsOpen] = useState(false);
+
     const searchRef = useRef(null);
     const pickerRef = useRef(null);
 
@@ -67,8 +68,12 @@ export default function CareerStep({
 
     function handleClearSearch() {
         setSearch("");
+        onChange("");
         setIsOpen(true);
-        searchRef.current?.focus();
+
+        setTimeout(() => {
+            searchRef.current?.focus();
+        }, 0);
     }
 
     function handleKeyDown(event) {
@@ -77,7 +82,10 @@ export default function CareerStep({
             searchRef.current?.blur();
         }
 
-        if (event.key === "Enter" && filteredCareers.length === 1) {
+        if (
+            event.key === "Enter" &&
+            filteredCareers.length === 1
+        ) {
             event.preventDefault();
             handleSelectCareer(filteredCareers[0]);
         }
@@ -123,7 +131,6 @@ export default function CareerStep({
                         isOpen ? "is-open" : ""
                     }`}
                 >
-                    {/* Search */}
                     <div className="career-search-wrapper">
                         <span
                             className="career-search-icon"
@@ -163,24 +170,20 @@ export default function CareerStep({
                             aria-autocomplete="list"
                         />
 
-                        {(search || selectedCareer) && !disabled && !loading && (
-                            <button
-                                type="button"
-                                className="career-search-clear"
-                                onClick={() => {
-                                    setSearch("");
-                                    onChange("");
-                                    setIsOpen(true);
-                                    searchRef.current?.focus();
-                                }}
-                                aria-label="Clear selected career"
-                            >
-                                ×
-                            </button>
-                        )}
+                        {(search || selectedCareer) &&
+                            !disabled &&
+                            !loading && (
+                                <button
+                                    type="button"
+                                    className="career-search-clear"
+                                    onClick={handleClearSearch}
+                                    aria-label="Clear selected career"
+                                >
+                                    ×
+                                </button>
+                            )}
                     </div>
 
-                    {/* Selected career */}
                     {selectedCareer && !isOpen && (
                         <div className="selected-career-preview">
                             <span
@@ -202,11 +205,10 @@ export default function CareerStep({
                                 onClick={() => {
                                     setIsOpen(true);
                                     setSearch("");
-                                    setTimeout(
-                                        () =>
-                                            searchRef.current?.focus(),
-                                        0
-                                    );
+
+                                    setTimeout(() => {
+                                        searchRef.current?.focus();
+                                    }, 0);
                                 }}
                                 className="change-career-button"
                             >
@@ -215,7 +217,6 @@ export default function CareerStep({
                         </div>
                     )}
 
-                    {/* Results */}
                     {showResults && (
                         <div
                             id="career-results"
@@ -277,8 +278,9 @@ export default function CareerStep({
                                                 </strong>
 
                                                 <small>
-                                                    View required skills
-                                                    and compare your
+                                                    View required
+                                                    skills and
+                                                    compare your
                                                     current level
                                                 </small>
                                             </span>
@@ -298,7 +300,6 @@ export default function CareerStep({
                         </div>
                     )}
 
-                    {/* No results */}
                     {!disabled &&
                         !loading &&
                         isOpen &&
@@ -330,7 +331,6 @@ export default function CareerStep({
                             </div>
                         )}
 
-                    {/* Initial helper */}
                     {!disabled &&
                         !loading &&
                         isOpen &&
