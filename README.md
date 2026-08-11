@@ -127,7 +127,7 @@ npm --prefix frontend run dev
 | `npm --prefix frontend test` | root | Vitest 11 tests (scoring) |
 | `pip install -r requirements.txt` | root | `fastapi, uvicorn[standard], sqlalchemy, pymysql, pypdf, requests, python-dotenv` (no `lxml` build needed) |
 
-**Env:** `VITE_API_URL` (optional, absolute API base; empty → uses `/api` proxy via `vite.config.js`)
+**Env:** `VITE_API_URL` (optional, browser-visible absolute API base; empty → uses `/api` proxy) and `VITE_PROXY_TARGET` (optional Vite server-side proxy target; defaults to `http://127.0.0.1:8000`).
 
 ---
 
@@ -155,7 +155,7 @@ totalRequired = Σ required_level (0-100 clamped)
 totalHave     = Σ min(inferred_or_user, required)
 match%        = round(totalHave/totalRequired*100)
 gap           = max(0, required - have)
-readiness     = ≥90 Excellent | ≥75 Strong | ≥60 Good | ≥40 Needs Improvement | <40 Beginner
+readiness     = ≥80 Highly Ready | ≥60 Career Ready | ≥40 Developing | <40 Beginner
 priority      = gap 0 None, ≤10 Low, ≤30 Medium, ≤50 High, >50 Critical
 ```
 

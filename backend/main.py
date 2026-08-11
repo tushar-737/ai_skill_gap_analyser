@@ -646,18 +646,15 @@ def get_priority(gap: int):
 # =====================================================
 
 def get_readiness(match_percentage: float):
-
-    if match_percentage >= 90:
-        return "Excellent"
-
-    if match_percentage >= 75:
-        return "Strong"
+    """Keep API readiness labels aligned with frontend/lib/scoring.js."""
+    if match_percentage >= 80:
+        return "Highly Ready"
 
     if match_percentage >= 60:
-        return "Good"
+        return "Career Ready"
 
     if match_percentage >= 40:
-        return "Needs Improvement"
+        return "Developing"
 
     return "Beginner"
 
@@ -880,10 +877,8 @@ def analyze_skill_gap(
             match_percentage = 0
 
 
-        match_percentage = round(
-            match_percentage,
-            2
-        )
+        # Match the frontend's displayed score: nearest whole percentage.
+        match_percentage = round(match_percentage)
 
 
         # =============================================

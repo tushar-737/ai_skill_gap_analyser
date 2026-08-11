@@ -194,10 +194,12 @@ export async function getAiRoadmap({
     skillGaps,
     strongSkills,
     education,
+    signal,
 }) {
 
     return apiRequest("/api/ai/roadmap", {
         method: "POST",
+        signal,
         headers: {
             "Content-Type": "application/json",
         },
