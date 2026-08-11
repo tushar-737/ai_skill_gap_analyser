@@ -64,6 +64,8 @@ notepad backend\.env
 # DB_HOST=localhost
 # DB_PORT=3306
 # DB_NAME=ai_skill_gap
+# Or use one URL instead of the DB_* values:
+# DATABASE_URL=mysql+pymysql://app_user:strong_password@localhost:3306/ai_skill_gap
 # AI_PROVIDER=auto          # auto = groq -> gemini -> keyword
 # GROQ_API_KEY=gsk_...      # https://console.groq.com/keys (30 RPM free, recommended)
 # GROQ_MODEL=llama-3.3-70b-versatile
