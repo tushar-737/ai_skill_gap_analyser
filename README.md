@@ -170,7 +170,7 @@ Frontend does local scoring for instant UI; backend `/api/analyze` mirrors it fo
 
 * `.env` is **gitignored** — only `.env.example` is committed. Never paste keys in screenshots/issues.
 * `/api/debug-db` is **gated by `DEBUG=true`** (404 in prod).
-* `CORS` is `GET,POST,OPTIONS` only, origin-locked via `ALLOWED_ORIGINS`.
+* `CORS` is origin-locked via `ALLOWED_ORIGINS`, accepts only `GET, POST, DELETE, OPTIONS`, and does not allow browser credentials.
 * Resume `5 MB` limit, `pypdf` + stdlib `zip` parsing (no `lxml` C++ build on Windows).
 * Resume history is isolated to an opaque browser session token; global history deletion is not available. Raw resume text is not persisted unless `STORE_RESUME_TEXT=true`.
 * AI-enabled resume analysis sends resume text to the configured Groq or Gemini provider. Obtain user consent before using this in a public deployment.

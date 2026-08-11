@@ -65,9 +65,11 @@ if not ALLOWED_ORIGINS:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
+    # The app uses no cookies or browser credentials; keep cross-origin calls
+    # token/header-based and avoid credentialed CORS exposure.
+    allow_credentials=False,
     allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
+    allow_headers=["Content-Type", "X-Resume-Session"],
 )
 
 
