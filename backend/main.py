@@ -2,12 +2,13 @@ import os
 import json
 import re
 import io
+import logging
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
 import requests
 
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form, Header
 from fastapi.middleware.cors import CORSMiddleware
 
 from pydantic import BaseModel, Field
@@ -17,6 +18,8 @@ from sqlalchemy import text
 
 from .database import get_db
 from . import models
+
+logger = logging.getLogger(__name__)
 
 
 # =====================================================
@@ -103,12 +106,12 @@ def database_test(
             ),
         }
 
-    except Exception as e:
-
-        return {
-            "status": "error",
-            "message": str(e),
-        }
+    except Exception:
+        logger.exception("Database connectivity check failed")
+        raise HTTPException(
+            status_code=503,
+            detail="Database service is unavailable.",
+        )
 
 
 # =====================================================
@@ -1320,6 +1323,19 @@ def get_ai_roadmap(payload: AiRoadmapRequest):
 
 MAX_RESUME_BYTES = 5 * 1024 * 1024  # 5 MB
 ALLOWED_RESUME_EXTS = {".pdf", ".docx", ".doc", ".txt"}
+RESUME_SESSION_HEADER = "X-Resume-Session"
+STORE_RESUME_TEXT = os.getenv("STORE_RESUME_TEXT", "false").lower() == "true"
+
+
+def _require_resume_session(session_token: Optional[str]) -> str:
+    """Validate the opaque per-browser token used for resume history isolation."""
+    token = (session_token or "").strip()
+    if not re.fullmatch(r"[a-f0-9-]{32,64}", token, re.IGNORECASE):
+        raise HTTPException(
+            status_code=400,
+            detail=f"A valid {RESUME_SESSION_HEADER} header is required.",
+        )
+    return token
 
 
 def _extract_text_from_bytes(data: bytes, filename: str) -> str:
@@ -1629,9 +1645,11 @@ async def analyze_resume(
     file: UploadFile = File(...),
     target_career_id: Optional[int] = Form(None),
     education: Optional[str] = Form(None),
+    resume_session: Optional[str] = Header(None, alias=RESUME_SESSION_HEADER),
     db: Session = Depends(get_db),
 ):
     # --- Validate ---
+    owner_token = _require_resume_session(resume_session)
     if not file or not file.filename:
         raise HTTPException(status_code=400, detail="No file uploaded")
 
@@ -1657,7 +1675,7 @@ async def analyze_resume(
         )
 
     # --- Cache check (5 min) — avoid re-calling Gemini for same file ---
-    cache_key = f"{hash(raw_text[:2000])}_{target_career_id}_{file.filename}"
+    cache_key = f"{owner_token}_{hash(raw_text[:2000])}_{target_career_id}_{file.filename}"
     now_ts = datetime.utcnow().timestamp()
     if cache_key in _resume_cache:
         cached_resp, ts = _resume_cache[cache_key]
@@ -1786,7 +1804,9 @@ async def analyze_resume(
         row = models.ResumeAnalysis(
             file_name=file.filename,
             file_size=len(data),
-            raw_text=raw_text[:10000],  # cap for DB
+            owner_token=owner_token,
+            # Resume text is sensitive. Persist it only when explicitly enabled.
+            raw_text=raw_text[:10000] if STORE_RESUME_TEXT else None,
             extracted_skills={"skills": mapped, "summary": summary, "source": source},
             target_career_id=int(target_career_id) if target_career_id else None,
             extraction_source=source,
@@ -1858,11 +1878,20 @@ async def analyze_resume(
 @app.get("/api/resume/history")
 def resume_history(
     limit: int = 10,
+    resume_session: Optional[str] = Header(None, alias=RESUME_SESSION_HEADER),
     db: Session = Depends(get_db),
 ):
+    """Return only uploads belonging to the current opaque browser session."""
+    owner_token = _require_resume_session(resume_session)
     limit = max(1, min(50, int(limit or 10)))
     try:
-        rows = db.query(models.ResumeAnalysis).order_by(models.ResumeAnalysis.created_at.desc()).limit(limit).all()
+        rows = (
+            db.query(models.ResumeAnalysis)
+            .filter(models.ResumeAnalysis.owner_token == owner_token)
+            .order_by(models.ResumeAnalysis.created_at.desc())
+            .limit(limit)
+            .all()
+        )
         return [
             {
                 "id": r.id,
@@ -1875,25 +1904,36 @@ def resume_history(
             }
             for r in rows
         ]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"History unavailable (run workbench/init.sql): {e}")
+    except Exception:
+        logger.exception("Could not load resume history")
+        raise HTTPException(status_code=503, detail="Resume history is unavailable.")
 
 
-@app.delete("/api/resume/history")
-def clear_resume_history(db: Session = Depends(get_db)):
-    """Clear all resume history — for demo cleanup. No auth (demo app)."""
+@app.delete("/api/resume/history/{analysis_id}")
+def delete_resume_history_item(
+    analysis_id: int,
+    resume_session: Optional[str] = Header(None, alias=RESUME_SESSION_HEADER),
+    db: Session = Depends(get_db),
+):
+    """Delete one upload owned by the current browser session, never global history."""
+    owner_token = _require_resume_session(resume_session)
     try:
-        count = db.query(models.ResumeAnalysis).delete()
+        row = (
+            db.query(models.ResumeAnalysis)
+            .filter(
+                models.ResumeAnalysis.id == analysis_id,
+                models.ResumeAnalysis.owner_token == owner_token,
+            )
+            .first()
+        )
+        if row is None:
+            raise HTTPException(status_code=404, detail="Resume analysis not found.")
+        db.delete(row)
         db.commit()
-        # also clear in-memory resume cache
-        try:
-            _resume_cache.clear()
-        except Exception:
-            pass
-        return {"status": "success", "deleted": count}
-    except Exception as e:
-        try:
-            db.rollback()
-        except Exception:
-            pass
-        raise HTTPException(status_code=500, detail=f"Clear failed (run workbench/init.sql): {e}")
+        return {"status": "success", "deleted": 1}
+    except HTTPException:
+        raise
+    except Exception:
+        db.rollback()
+        logger.exception("Could not delete resume history item")
+        raise HTTPException(status_code=503, detail="Resume history is unavailable.")

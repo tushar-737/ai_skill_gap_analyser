@@ -102,16 +102,24 @@ CREATE TABLE IF NOT EXISTS `resume_analyses` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `file_name` VARCHAR(255) NOT NULL,
   `file_size` INT NULL,
+  -- Opaque browser session identifier; used to isolate resume history.
+  `owner_token` VARCHAR(64) NULL,
   `raw_text` TEXT NULL,
   `extracted_skills` JSON NULL,
   `target_career_id` INT NULL,
   `extraction_source` VARCHAR(20) NOT NULL DEFAULT 'keyword',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   INDEX `idx_resume_career` (`target_career_id`),
+  INDEX `idx_resume_owner_token` (`owner_token`),
   CONSTRAINT `fk_resume_career`
     FOREIGN KEY (`target_career_id`) REFERENCES `careers_v2` (`id`)
     ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Existing installations: run these once if `resume_analyses` was
+-- created by an earlier version of this script.
+-- ALTER TABLE `resume_analyses` ADD COLUMN `owner_token` VARCHAR(64) NULL;
+-- CREATE INDEX `idx_resume_owner_token` ON `resume_analyses` (`owner_token`);
 
 -- -----------------------------------------------------
 -- Verify

@@ -141,7 +141,8 @@ All tables are `InnoDB utf8mb4`, `IF NOT EXISTS`:
 * `careers_v2` (id, domain_id FK, name, average_level)
 * `skills_v2` (id, name UQ, category)
 * `career_skill_requirements` (id, career_id FK, skill_id FK, required_level, UQ(career_id,skill_id))
-* `resume_analyses` (id, file_name, file_size, raw_text TEXT, extracted_skills JSON, target_career_id FK, extraction_source, created_at DATETIME)
+* `resume_analyses` (id, file_name, file_size, owner_token, raw_text TEXT optional, extracted_skills JSON, target_career_id FK, extraction_source, created_at DATETIME)
+  * Upload history is isolated by an opaque browser session token. It is not a replacement for authentication in a multi-user deployment.
 
 Seed your own data in Workbench or via `POST /api/...` — the code creates no dummy data.
 
@@ -168,6 +169,8 @@ Frontend does local scoring for instant UI; backend `/api/analyze` mirrors it fo
 * `/api/debug-db` is **gated by `DEBUG=true`** (404 in prod).
 * `CORS` is `GET,POST,OPTIONS` only, origin-locked via `ALLOWED_ORIGINS`.
 * Resume `5 MB` limit, `pypdf` + stdlib `zip` parsing (no `lxml` C++ build on Windows).
+* Resume history is isolated to an opaque browser session token; global history deletion is not available. Raw resume text is not persisted unless `STORE_RESUME_TEXT=true`.
+* AI-enabled resume analysis sends resume text to the configured Groq or Gemini provider. Obtain user consent before using this in a public deployment.
 
 ---
 

@@ -988,6 +988,14 @@
     background: #f0fdf4;
 }
 
+.resume-privacy-note {
+    max-width: 34rem;
+    margin: 0.35rem auto 0;
+    color: #64748b;
+    font-size: 0.75rem;
+    line-height: 1.45;
+}
+
 .resume-dropzone-icon {
     width: 48px;
     height: 48px;

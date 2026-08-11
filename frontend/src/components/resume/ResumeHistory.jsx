@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getResumeHistory, clearResumeHistory } from "../../api/api";
+import { getResumeHistory, deleteResumeHistoryItem } from "../../api/api";
 
 export default function ResumeHistory({ onReload = () => {}, refreshKey = 0 }) {
     const [rows, setRows] = useState([]);
@@ -66,29 +66,6 @@ export default function ResumeHistory({ onReload = () => {}, refreshKey = 0 }) {
                     <button type="button" className="secondary-button" onClick={load} style={{ padding: "6px 12px", fontSize: 13 }} title="Refresh">
                         ↻
                     </button>
-                    {rows.length > 0 && (
-                        <button
-                            type="button"
-                            className="secondary-button"
-                            onClick={async () => {
-                                if (!window.confirm(`Clear all ${rows.length} saved resumes? This deletes from Workbench resume_analyses.`)) return;
-                                setClearing(true);
-                                try {
-                                    await clearResumeHistory();
-                                    await load();
-                                } catch (e) {
-                                    setError(e.message);
-                                } finally {
-                                    setClearing(false);
-                                }
-                            }}
-                            disabled={clearing}
-                            style={{ padding: "6px 12px", fontSize: 12, color: "#b91c1c", borderColor: "#fecaca" }}
-                            title="Clear all history from Workbench"
-                        >
-                            {clearing ? "…" : "🗑 Clear All"}
-                        </button>
-                    )}
                 </div>
             </div>
 
@@ -119,9 +96,32 @@ export default function ResumeHistory({ onReload = () => {}, refreshKey = 0 }) {
                                             {skills.length > 3 && <small style={{ color: "#64748b", fontSize: 11 }}>+{skills.length - 3}</small>}
                                         </div>
                                     </div>
-                                    <button type="button" className="secondary-button" onClick={() => onReload(r)} style={{ padding: "6px 10px", fontSize: 12, whiteSpace: "nowrap" }}>
-                                        ↩
-                                    </button>
+                                    <div style={{ display: "flex", gap: 6 }}>
+                                        <button type="button" className="secondary-button" onClick={() => onReload(r)} style={{ padding: "6px 10px", fontSize: 12, whiteSpace: "nowrap" }}>
+                                            ↩
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="secondary-button"
+                                            disabled={clearing}
+                                            onClick={async () => {
+                                                if (!window.confirm(`Delete ${r.file_name} from your upload history?`)) return;
+                                                setClearing(true);
+                                                try {
+                                                    await deleteResumeHistoryItem(r.id);
+                                                    await load();
+                                                } catch (e) {
+                                                    setError(e.message || "Could not delete this upload.");
+                                                } finally {
+                                                    setClearing(false);
+                                                }
+                                            }}
+                                            style={{ padding: "6px 10px", fontSize: 12, color: "#b91c1c", borderColor: "#fecaca" }}
+                                            title="Delete this upload"
+                                        >
+                                            🗑
+                                        </button>
+                                    </div>
                                 </div>
                             );
                         })}

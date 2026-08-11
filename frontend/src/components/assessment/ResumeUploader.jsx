@@ -87,7 +87,8 @@ export default function ResumeUploader({ selectedCareer = "", selectedEducation 
                         📄
                     </div>
                     <strong>Drop your resume here</strong>
-                    <small>PDF or DOCX • Optional • Max 5 MB • Saved to Workbench</small>
+                    <small>PDF or DOCX • Optional • Max 5 MB • Skills are saved to your browser-specific history</small>
+                    <p className="resume-privacy-note">By uploading, you allow the app to extract skills. When AI mode is enabled, resume text is sent to your configured Groq or Gemini provider. Raw resume text is not stored by default.</p>
                     <button type="button" className="secondary-button" onClick={() => inputRef.current?.click()} style={{ marginTop: 8 }}>
                         Choose File
                     </button>
