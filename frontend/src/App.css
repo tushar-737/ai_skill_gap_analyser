@@ -192,9 +192,6 @@
    SKILLS RATER
 ===================================================== */
 
-.skills-rater {
-    /* uses assessment-step base */
-}
 
 .skills-list {
     display: grid;
@@ -253,9 +250,7 @@
    PRIORITY CARD (alias)
 ===================================================== */
 
-.priority-card {
-    /* uses result-card base — no extra rules needed */
-}
+
 
 
 /* =====================================================
@@ -966,10 +961,6 @@
 /* =====================================================
    RESUME UPLOADER — Gemini passkey + Workbench
 ===================================================== */
-
-.resume-uploader {
-    /* uses assessment-step */
-}
 
 .resume-dropzone {
     margin-top: 18px;
@@ -3589,5 +3580,974 @@ select:focus-visible {
 @media (max-width: 480px) {
     .about-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+/* =====================================================
+   SKILLS RATER UX UPGRADE
+   Search + Filters + Collapsible Categories
+   ===================================================== */
+
+.skills-toolbar {
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) auto auto;
+    align-items: center;
+    gap: 12px;
+    margin-top: 22px;
+    padding: 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+}
+
+.skills-search-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.skills-search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.skills-search {
+    width: 100%;
+    height: 44px;
+    padding: 0 40px 0 40px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: white;
+    color: #0f172a;
+    font-size: 14px;
+    outline: none;
+    transition: 0.2s ease;
+    box-sizing: border-box;
+}
+
+.skills-search::placeholder {
+    color: #94a3b8;
+}
+
+.skills-search:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.skills-search-clear {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 50%;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.skills-search-clear:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.skills-filters {
+    display: flex;
+    gap: 8px;
+}
+
+.skills-filter-select {
+    height: 44px;
+    min-width: 145px;
+    padding: 0 32px 0 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: white;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+}
+
+.skills-filter-select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.skills-clear-filters {
+    height: 44px;
+    white-space: nowrap;
+}
+
+.skills-result-info {
+    margin-top: 12px;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.skills-result-info strong {
+    color: #334155;
+}
+
+
+/* =====================================================
+   CATEGORY GROUPS
+   ===================================================== */
+
+.skills-grouped {
+    display: grid;
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.skill-group {
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: white;
+    overflow: hidden;
+}
+
+.skill-group-header {
+    width: 100%;
+    min-height: 58px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border: none;
+    background: #f8fafc;
+    color: #0f172a;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s ease;
+}
+
+.skill-group-header:hover {
+    background: #f1f5f9;
+}
+
+.skill-group-header:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.18);
+    outline-offset: -3px;
+}
+
+.skill-group-icon {
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    border-radius: 9px;
+    background: #eef2ff;
+    font-size: 16px;
+}
+
+.skill-group-header h3 {
+    margin: 0;
+    flex: 1;
+    font-size: 14px;
+    font-weight: 750;
+    color: #0f172a;
+}
+
+.skill-group-progress {
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.skill-group-count {
+    min-width: 26px;
+    height: 24px;
+    padding: 0 7px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: #e2e8f0;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.skill-group-chevron {
+    width: 24px;
+    text-align: center;
+    color: #64748b;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+
+/* =====================================================
+   SKILL LIST INSIDE GROUP
+   ===================================================== */
+
+.skill-group .skills-list-v2 {
+    margin-top: 0;
+    padding: 14px;
+    background: white;
+}
+
+.skill-group .skill-item-v2 {
+    padding: 15px;
+}
+
+.skill-group .skill-item-v2 + .skill-item-v2 {
+    margin-top: 12px;
+}
+
+
+/* =====================================================
+   EMPTY SEARCH STATE
+   ===================================================== */
+
+.skills-empty-state {
+    margin-top: 18px;
+    padding: 42px 20px;
+    text-align: center;
+    border: 1px dashed #cbd5e1;
+    border-radius: 16px;
+    background: #f8fafc;
+}
+
+.skills-empty-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 12px;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: #eef2ff;
+    font-size: 22px;
+}
+
+.skills-empty-state h3 {
+    margin: 0 0 6px;
+    color: #0f172a;
+    font-size: 16px;
+}
+
+.skills-empty-state p {
+    margin: 0 auto 16px;
+    max-width: 400px;
+    color: #64748b;
+    font-size: 13px;
+}
+
+
+/* =====================================================
+   TOP PRIORITY PREVIEW
+   ===================================================== */
+
+.top-priority-preview {
+    margin-top: 20px;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #f8fafc;
+}
+
+.top-priority-preview h4 {
+    margin: 0 0 10px;
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.top-priority-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.top-priority-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.top-priority-chip em {
+    color: #dc2626;
+    font-style: normal;
+    font-weight: 800;
+}
+
+
+/* =====================================================
+   NOT FAMILIAR BUTTON
+   ===================================================== */
+
+.not-familiar-btn {
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 6px 10px;
+    background: white;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.not-familiar-btn:hover {
+    border-color: #94a3b8;
+    background: #f8fafc;
+    color: #334155;
+}
+
+.not-familiar-btn.active {
+    border-color: #bfdbfe;
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+
+/* =====================================================
+   ANALYZE BUTTON
+   ===================================================== */
+
+.skills-rater .analyze-button {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 900px) {
+    .skills-toolbar {
+        grid-template-columns: 1fr;
+    }
+
+    .skills-filters {
+        width: 100%;
+    }
+
+    .skills-filter-select {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .skills-clear-filters {
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .skills-toolbar {
+        padding: 10px;
+    }
+
+    .skills-filters {
+        flex-direction: column;
+    }
+
+    .skills-filter-select {
+        width: 100%;
+    }
+
+    .skill-group-header {
+        padding: 11px 12px;
+        gap: 8px;
+    }
+
+    .skill-group-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+    }
+
+    .skill-group-header h3 {
+        font-size: 13px;
+    }
+
+    .skill-group-progress {
+        font-size: 11px;
+    }
+
+    .skill-group .skills-list-v2 {
+        padding: 10px;
+    }
+
+    .skill-group .skill-item-v2 {
+        padding: 12px;
+    }
+
+    .skill-v2-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .skill-v2-meta {
+        width: 100%;
+    }
+
+    .skill-bar-row {
+        grid-template-columns: 72px 1fr 38px;
+        gap: 7px;
+    }
+
+    .skill-bar-label {
+        font-size: 10px;
+    }
+
+    .skill-item-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .not-familiar-btn {
+        width: 100%;
+    }
+
+    .top-priority-list {
+        flex-direction: column;
+    }
+
+    .top-priority-chip {
+        width: 100%;
+        justify-content: space-between;
+        box-sizing: border-box;
+    }
+}
+
+/* =====================================================
+   RESULTS — QUICK INSIGHTS & MATCH STATUS
+   ===================================================== */
+
+.result-match-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1px solid #e2e8f0;
+}
+
+.result-match-status span:last-child {
+    color: #64748b;
+    font-weight: 600;
+}
+
+.result-match-status.strong {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #15803d;
+}
+
+.result-match-status.developing {
+    background: #fefce8;
+    border-color: #fde68a;
+    color: #a16207;
+}
+
+.result-match-status.improving {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #c2410c;
+}
+
+.result-match-status.starting {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #b91c1c;
+}
+
+
+/* =====================================================
+   QUICK INSIGHTS
+   ===================================================== */
+
+.result-insights {
+    width: min(900px, 100%);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 20px auto 0;
+}
+
+.result-insight-card {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 14px;
+    text-align: left;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 13px;
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.result-insight-card:hover {
+    transform: translateY(-2px);
+    border-color: #cbd5e1;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.result-insight-icon {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    font-size: 16px;
+}
+
+.result-insight-card div {
+    min-width: 0;
+}
+
+.result-insight-card small {
+    display: block;
+    margin-bottom: 4px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.result-insight-card strong {
+    display: block;
+    overflow: hidden;
+    color: #0f172a;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* =====================================================
+   RESULTS DESCRIPTION
+   ===================================================== */
+
+.results-description {
+    max-width: 620px;
+    margin: 0 auto;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 800px) {
+    .result-insights {
+        grid-template-columns: 1fr;
+        max-width: 520px;
+    }
+
+    .result-insight-card strong {
+        white-space: normal;
+    }
+}
+
+@media (max-width: 500px) {
+    .results-section {
+        padding: 20px 14px;
+    }
+
+    .results-header h2 {
+        font-size: 24px;
+    }
+
+    .result-match-status {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .result-insight-card {
+        padding: 12px;
+    }
+}
+/* =====================================================
+   CAREER PICKER — SEARCHABLE CAREER SELECTION
+   ===================================================== */
+
+.career-picker-group {
+    position: relative;
+}
+
+.career-picker {
+    position: relative;
+    width: 100%;
+}
+
+.career-search-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.career-search-wrapper input {
+    width: 100%;
+    height: 48px;
+    box-sizing: border-box;
+    padding: 0 44px 0 42px;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 14px;
+    outline: none;
+    transition: 0.2s ease;
+}
+
+.career-search-wrapper input::placeholder {
+    color: #94a3b8;
+}
+
+.career-search-wrapper input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.career-search-wrapper input:disabled {
+    background: #f8fafc;
+    cursor: not-allowed;
+}
+
+.career-search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    pointer-events: none;
+    font-size: 15px;
+}
+
+.career-search-clear {
+    position: absolute;
+    right: 9px;
+    top: 50%;
+    width: 30px;
+    height: 30px;
+    transform: translateY(-50%);
+    border: none;
+    border-radius: 50%;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.career-search-clear:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+
+/* =====================================================
+   SELECTED CAREER
+   ===================================================== */
+
+.selected-career-preview {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 12px 14px;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    background: #eff6ff;
+}
+
+.selected-career-check {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 9px;
+    background: #2563eb;
+    color: white;
+    font-weight: 800;
+}
+
+.selected-career-preview div {
+    min-width: 0;
+    flex: 1;
+}
+
+.selected-career-preview small {
+    display: block;
+    margin-bottom: 2px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.selected-career-preview strong {
+    display: block;
+    overflow: hidden;
+    color: #1e3a8a;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.change-career-button {
+    border: none;
+    background: transparent;
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.change-career-button:hover {
+    text-decoration: underline;
+}
+
+
+/* =====================================================
+   CAREER RESULTS
+   ===================================================== */
+
+.career-results {
+    position: absolute;
+    z-index: 30;
+    left: 0;
+    right: 0;
+    top: calc(100% + 7px);
+    overflow: hidden;
+    border: 1px solid #dbe3ee;
+    border-radius: 14px;
+    background: white;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.14);
+}
+
+.career-results-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 11px 14px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.career-results-list {
+    max-height: 310px;
+    overflow-y: auto;
+    padding: 6px;
+}
+
+.career-results-list::-webkit-scrollbar {
+    width: 7px;
+}
+
+.career-results-list::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: #cbd5e1;
+}
+
+.career-results-list::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+
+
+/* =====================================================
+   CAREER OPTION
+   ===================================================== */
+
+.career-option {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 11px 10px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: white;
+    color: #0f172a;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.career-option:hover {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+.career-option.selected {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.career-option-icon {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 9px;
+    background: #f1f5f9;
+    font-size: 15px;
+}
+
+.career-option.selected .career-option-icon {
+    background: white;
+}
+
+.career-option-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.career-option-content strong {
+    display: block;
+    overflow: hidden;
+    font-size: 13px;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.career-option-content small {
+    display: block;
+    margin-top: 3px;
+    overflow: hidden;
+    color: #64748b;
+    font-size: 10px;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.career-option-check {
+    flex-shrink: 0;
+    color: #2563eb;
+    font-size: 16px;
+    font-weight: 900;
+}
+
+
+/* =====================================================
+   EMPTY / HELPER STATES
+   ===================================================== */
+
+.career-empty {
+    padding: 28px 20px;
+    text-align: center;
+}
+
+.career-empty-icon {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 24px;
+}
+
+.career-empty strong {
+    display: block;
+    color: #0f172a;
+    font-size: 14px;
+}
+
+.career-empty p {
+    margin: 5px 0 12px;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.career-empty button {
+    border: none;
+    background: transparent;
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.career-empty button:hover {
+    text-decoration: underline;
+}
+
+.career-picker-hint {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 13px;
+    margin-top: 7px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 11px;
+}
+
+.career-count {
+    display: block;
+    margin-top: 7px;
+    color: #94a3b8;
+    font-size: 10px;
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 600px) {
+    .career-results {
+        position: relative;
+        top: auto;
+        margin-top: 7px;
+    }
+
+    .career-results-list {
+        max-height: 280px;
+    }
+
+    .career-option-content small {
+        white-space: normal;
+    }
+
+    .career-results-header {
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .selected-career-preview {
+        padding: 10px 11px;
     }
 }
