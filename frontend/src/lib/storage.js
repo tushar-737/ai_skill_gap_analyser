@@ -10,6 +10,23 @@
 //   r = whether results were shown
 
 const STORAGE_KEY = "skillgap:state:v1";
+const RESUME_SESSION_KEY = "skillgap:resume-session:v1";
+
+// An opaque identifier isolates one browser's upload history. It is not
+// authentication; a production multi-user app still needs real accounts.
+export function getResumeSession() {
+    try {
+        let token = localStorage.getItem(RESUME_SESSION_KEY);
+        if (!token) {
+            token = crypto.randomUUID();
+            localStorage.setItem(RESUME_SESSION_KEY, token);
+        }
+        return token;
+    } catch (error) {
+        console.error("Failed to initialise resume session:", error);
+        throw new Error("Browser storage is required to manage resume history.");
+    }
+}
 
 export function loadState() {
     try {

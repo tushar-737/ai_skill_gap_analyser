@@ -2,12 +2,16 @@ import os
 import json
 import re
 import io
+import logging
+import time
+from collections import defaultdict, deque
+from threading import Lock
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
 import requests
 
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from pydantic import BaseModel, Field
@@ -17,6 +21,8 @@ from sqlalchemy import text
 
 from .database import get_db
 from . import models
+
+logger = logging.getLogger(__name__)
 
 
 # =====================================================
@@ -59,10 +65,51 @@ if not ALLOWED_ORIGINS:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
+    # The app uses no cookies or browser credentials; keep cross-origin calls
+    # token/header-based and avoid credentialed CORS exposure.
+    allow_credentials=False,
     allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
+    allow_headers=["Content-Type", "X-Resume-Session"],
 )
+
+
+# =====================================================
+# IN-MEMORY REQUEST LIMITS
+# =====================================================
+# These limits protect AI quota and upload capacity in a single FastAPI
+# process. For multi-instance production deployments, use a shared limiter
+# such as Redis or an API gateway instead.
+RATE_LIMIT_WINDOW_SECONDS = max(1, int(os.getenv("RATE_LIMIT_WINDOW_SECONDS", "60")))
+RESUME_ANALYZE_LIMIT = max(1, int(os.getenv("RESUME_ANALYZE_LIMIT", "5")))
+AI_ROADMAP_LIMIT = max(1, int(os.getenv("AI_ROADMAP_LIMIT", "15")))
+TRUST_PROXY_HEADERS = os.getenv("TRUST_PROXY_HEADERS", "false").lower() == "true"
+_rate_limit_hits = defaultdict(deque)
+_rate_limit_lock = Lock()
+
+
+def _client_identifier(request: Request) -> str:
+    if TRUST_PROXY_HEADERS:
+        forwarded = request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+        if forwarded:
+            return forwarded
+    return request.client.host if request.client else "unknown"
+
+
+def _enforce_rate_limit(request: Request, bucket: str, limit: int) -> None:
+    now = time.monotonic()
+    key = f"{bucket}:{_client_identifier(request)}"
+    with _rate_limit_lock:
+        hits = _rate_limit_hits[key]
+        while hits and now - hits[0] >= RATE_LIMIT_WINDOW_SECONDS:
+            hits.popleft()
+        if len(hits) >= limit:
+            retry_after = max(1, int(RATE_LIMIT_WINDOW_SECONDS - (now - hits[0])))
+            raise HTTPException(
+                status_code=429,
+                detail="Too many requests. Please try again shortly.",
+                headers={"Retry-After": str(retry_after)},
+            )
+        hits.append(now)
 
 
 # =====================================================
@@ -103,12 +150,12 @@ def database_test(
             ),
         }
 
-    except Exception as e:
-
-        return {
-            "status": "error",
-            "message": str(e),
-        }
+    except Exception:
+        logger.exception("Database connectivity check failed")
+        raise HTTPException(
+            status_code=503,
+            detail="Database service is unavailable.",
+        )
 
 
 # =====================================================
@@ -643,18 +690,15 @@ def get_priority(gap: int):
 # =====================================================
 
 def get_readiness(match_percentage: float):
-
-    if match_percentage >= 90:
-        return "Excellent"
-
-    if match_percentage >= 75:
-        return "Strong"
+    """Keep API readiness labels aligned with frontend/lib/scoring.js."""
+    if match_percentage >= 80:
+        return "Highly Ready"
 
     if match_percentage >= 60:
-        return "Good"
+        return "Career Ready"
 
     if match_percentage >= 40:
-        return "Needs Improvement"
+        return "Developing"
 
     return "Beginner"
 
@@ -877,10 +921,8 @@ def analyze_skill_gap(
             match_percentage = 0
 
 
-        match_percentage = round(
-            match_percentage,
-            2
-        )
+        # Match the frontend's displayed score: nearest whole percentage.
+        match_percentage = round(match_percentage)
 
 
         # =============================================
@@ -1039,18 +1081,19 @@ _resume_cache: Dict[str, tuple] = {}  # key -> (response_dict, timestamp)
 
 
 class SkillGapItem(BaseModel):
-    name: str
-    current: int = 0
-    required: int = 0
-    gap: int = 0
+    name: str = Field(min_length=1, max_length=150)
+    current: int = Field(default=0, ge=0, le=100)
+    required: int = Field(default=0, ge=0, le=100)
+    gap: int = Field(default=0, ge=0, le=100)
 
 
 class AiRoadmapRequest(BaseModel):
-    career_name: str
-    match_score: int = 0
-    skill_gaps: List[SkillGapItem] = Field(default_factory=list)
-    strong_skills: List[str] = Field(default_factory=list)
-    education: Optional[str] = None
+    career_name: str = Field(min_length=1, max_length=150)
+    match_score: int = Field(default=0, ge=0, le=100)
+    # Bound untrusted input before it is included in an AI-provider prompt.
+    skill_gaps: List[SkillGapItem] = Field(default_factory=list, max_length=10)
+    strong_skills: List[str] = Field(default_factory=list, max_length=20)
+    education: Optional[str] = Field(default=None, max_length=200)
 
 
 ROADMAP_JSON_SCHEMA = {
@@ -1289,7 +1332,8 @@ def fallback_roadmap(payload: AiRoadmapRequest) -> dict:
 
 
 @app.post("/api/ai/roadmap")
-def get_ai_roadmap(payload: AiRoadmapRequest):
+def get_ai_roadmap(payload: AiRoadmapRequest, request: Request):
+    _enforce_rate_limit(request, "ai-roadmap", AI_ROADMAP_LIMIT)
     roadmap = _call_ai_roadmap(payload)
 
     if roadmap is None:
@@ -1319,7 +1363,48 @@ def get_ai_roadmap(payload: AiRoadmapRequest):
 #    Workbench users can then `SELECT * FROM resume_analyses`.
 
 MAX_RESUME_BYTES = 5 * 1024 * 1024  # 5 MB
-ALLOWED_RESUME_EXTS = {".pdf", ".docx", ".doc", ".txt"}
+ALLOWED_RESUME_EXTS = {".pdf", ".docx", ".txt"}
+MAX_DOCX_UNCOMPRESSED_BYTES = 20 * 1024 * 1024
+MAX_DOCX_ARCHIVE_ENTRIES = 2_000
+RESUME_SESSION_HEADER = "X-Resume-Session"
+STORE_RESUME_TEXT = os.getenv("STORE_RESUME_TEXT", "false").lower() == "true"
+
+
+def _require_resume_session(session_token: Optional[str]) -> str:
+    """Validate the opaque per-browser token used for resume history isolation."""
+    token = (session_token or "").strip()
+    if not re.fullmatch(r"[a-f0-9-]{32,64}", token, re.IGNORECASE):
+        raise HTTPException(
+            status_code=400,
+            detail=f"A valid {RESUME_SESSION_HEADER} header is required.",
+        )
+    return token
+
+
+def _validate_resume_content(data: bytes, filename: str) -> None:
+    """Validate the file signature and DOCX archive bounds before parsing it."""
+    name = (filename or "").lower()
+    if name.endswith(".pdf"):
+        if not data.startswith(b"%PDF-"):
+            raise HTTPException(status_code=422, detail="The uploaded file is not a valid PDF.")
+        return
+
+    if name.endswith(".docx"):
+        import zipfile
+
+        try:
+            with zipfile.ZipFile(io.BytesIO(data)) as archive:
+                entries = archive.infolist()
+                if len(entries) > MAX_DOCX_ARCHIVE_ENTRIES:
+                    raise HTTPException(status_code=422, detail="DOCX contains too many archive entries.")
+                if sum(entry.file_size for entry in entries) > MAX_DOCX_UNCOMPRESSED_BYTES:
+                    raise HTTPException(status_code=422, detail="DOCX expands beyond the allowed size.")
+                if "word/document.xml" not in archive.namelist():
+                    raise HTTPException(status_code=422, detail="The uploaded file is not a valid DOCX document.")
+        except HTTPException:
+            raise
+        except (zipfile.BadZipFile, zipfile.LargeZipFile):
+            raise HTTPException(status_code=422, detail="The uploaded file is not a valid DOCX document.")
 
 
 def _extract_text_from_bytes(data: bytes, filename: str) -> str:
@@ -1347,8 +1432,8 @@ def _extract_text_from_bytes(data: bytes, filename: str) -> str:
         except Exception:
             return ""
 
-    # --- DOCX / DOC (docx parsed without lxml: zip + stdlib xml) ---
-    if name.endswith(".docx") or name.endswith(".doc"):
+    # --- DOCX (parsed without lxml: zip + stdlib xml) ---
+    if name.endswith(".docx"):
         # Try python-docx first if available (needs lxml), else fallback to zip+xml
         try:
             import docx  # type: ignore
@@ -1375,12 +1460,6 @@ def _extract_text_from_bytes(data: bytes, filename: str) -> str:
                 return txt
         except Exception as e:
             print("DOCX (zip) Extract note:", e)
-        # Old .doc (not zip) — fall back to text decode
-        try:
-            return data.decode("utf-8", errors="ignore")
-        except Exception:
-            return ""
-
     # --- TXT / fallback ---
     try:
         return data.decode("utf-8", errors="ignore").strip()
@@ -1626,12 +1705,16 @@ def _keyword_extract(
 
 @app.post("/api/resume/analyze")
 async def analyze_resume(
+    request: Request,
     file: UploadFile = File(...),
     target_career_id: Optional[int] = Form(None),
     education: Optional[str] = Form(None),
+    resume_session: Optional[str] = Header(None, alias=RESUME_SESSION_HEADER),
     db: Session = Depends(get_db),
 ):
     # --- Validate ---
+    _enforce_rate_limit(request, "resume-analyze", RESUME_ANALYZE_LIMIT)
+    owner_token = _require_resume_session(resume_session)
     if not file or not file.filename:
         raise HTTPException(status_code=400, detail="No file uploaded")
 
@@ -1648,6 +1731,8 @@ async def analyze_resume(
     if len(data) > MAX_RESUME_BYTES:
         raise HTTPException(status_code=400, detail="File too large (max 5 MB)")
 
+    _validate_resume_content(data, file.filename)
+
     # --- Extract text ---
     raw_text = _extract_text_from_bytes(data, file.filename).strip()
     if not raw_text or len(raw_text) < 20:
@@ -1657,7 +1742,7 @@ async def analyze_resume(
         )
 
     # --- Cache check (5 min) — avoid re-calling Gemini for same file ---
-    cache_key = f"{hash(raw_text[:2000])}_{target_career_id}_{file.filename}"
+    cache_key = f"{owner_token}_{hash(raw_text[:2000])}_{target_career_id}_{file.filename}"
     now_ts = datetime.utcnow().timestamp()
     if cache_key in _resume_cache:
         cached_resp, ts = _resume_cache[cache_key]
@@ -1786,7 +1871,9 @@ async def analyze_resume(
         row = models.ResumeAnalysis(
             file_name=file.filename,
             file_size=len(data),
-            raw_text=raw_text[:10000],  # cap for DB
+            owner_token=owner_token,
+            # Resume text is sensitive. Persist it only when explicitly enabled.
+            raw_text=raw_text[:10000] if STORE_RESUME_TEXT else None,
             extracted_skills={"skills": mapped, "summary": summary, "source": source},
             target_career_id=int(target_career_id) if target_career_id else None,
             extraction_source=source,
@@ -1858,11 +1945,20 @@ async def analyze_resume(
 @app.get("/api/resume/history")
 def resume_history(
     limit: int = 10,
+    resume_session: Optional[str] = Header(None, alias=RESUME_SESSION_HEADER),
     db: Session = Depends(get_db),
 ):
+    """Return only uploads belonging to the current opaque browser session."""
+    owner_token = _require_resume_session(resume_session)
     limit = max(1, min(50, int(limit or 10)))
     try:
-        rows = db.query(models.ResumeAnalysis).order_by(models.ResumeAnalysis.created_at.desc()).limit(limit).all()
+        rows = (
+            db.query(models.ResumeAnalysis)
+            .filter(models.ResumeAnalysis.owner_token == owner_token)
+            .order_by(models.ResumeAnalysis.created_at.desc())
+            .limit(limit)
+            .all()
+        )
         return [
             {
                 "id": r.id,
@@ -1875,25 +1971,36 @@ def resume_history(
             }
             for r in rows
         ]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"History unavailable (run workbench/init.sql): {e}")
+    except Exception:
+        logger.exception("Could not load resume history")
+        raise HTTPException(status_code=503, detail="Resume history is unavailable.")
 
 
-@app.delete("/api/resume/history")
-def clear_resume_history(db: Session = Depends(get_db)):
-    """Clear all resume history — for demo cleanup. No auth (demo app)."""
+@app.delete("/api/resume/history/{analysis_id}")
+def delete_resume_history_item(
+    analysis_id: int,
+    resume_session: Optional[str] = Header(None, alias=RESUME_SESSION_HEADER),
+    db: Session = Depends(get_db),
+):
+    """Delete one upload owned by the current browser session, never global history."""
+    owner_token = _require_resume_session(resume_session)
     try:
-        count = db.query(models.ResumeAnalysis).delete()
+        row = (
+            db.query(models.ResumeAnalysis)
+            .filter(
+                models.ResumeAnalysis.id == analysis_id,
+                models.ResumeAnalysis.owner_token == owner_token,
+            )
+            .first()
+        )
+        if row is None:
+            raise HTTPException(status_code=404, detail="Resume analysis not found.")
+        db.delete(row)
         db.commit()
-        # also clear in-memory resume cache
-        try:
-            _resume_cache.clear()
-        except Exception:
-            pass
-        return {"status": "success", "deleted": count}
-    except Exception as e:
-        try:
-            db.rollback()
-        except Exception:
-            pass
-        raise HTTPException(status_code=500, detail=f"Clear failed (run workbench/init.sql): {e}")
+        return {"status": "success", "deleted": 1}
+    except HTTPException:
+        raise
+    except Exception:
+        db.rollback()
+        logger.exception("Could not delete resume history item")
+        raise HTTPException(status_code=503, detail="Resume history is unavailable.")

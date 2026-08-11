@@ -21,7 +21,7 @@ export default function ResumeUploader({ selectedCareer = "", selectedEducation 
         setResult(null);
         if (!nextFile) return;
         const ext = nextFile.name.toLowerCase().split(".").pop();
-        if (!["pdf", "docx", "doc", "txt"].includes(ext)) {
+        if (!["pdf", "docx", "txt"].includes(ext)) {
             setError("Please upload a PDF or DOCX resume.");
             return;
         }
@@ -87,14 +87,16 @@ export default function ResumeUploader({ selectedCareer = "", selectedEducation 
                         📄
                     </div>
                     <strong>Drop your resume here</strong>
-                    <small>PDF or DOCX • Optional • Max 5 MB • Saved to Workbench</small>
+                    <small>PDF or DOCX • Optional • Max 5 MB • Skills are saved to your browser-specific history</small>
+                    <p className="resume-privacy-note">By uploading, you allow the app to extract skills. When AI mode is enabled, resume text is sent to your configured Groq or Gemini provider. Raw resume text is not stored by default.</p>
                     <button type="button" className="secondary-button" onClick={() => inputRef.current?.click()} style={{ marginTop: 8 }}>
                         Choose File
                     </button>
                     <input
                         ref={inputRef}
                         type="file"
-                        accept=".pdf,.docx,.doc,.txt"
+                        aria-label="Choose a resume file"
+                        accept=".pdf,.docx,.txt"
                         style={{ display: "none" }}
                         onChange={(e) => pickFile(e.target.files?.[0])}
                     />
@@ -142,7 +144,8 @@ export default function ResumeUploader({ selectedCareer = "", selectedEducation 
                     <input
                         ref={inputRef}
                         type="file"
-                        accept=".pdf,.docx,.doc,.txt"
+                        aria-label="Choose a resume file"
+                        accept=".pdf,.docx,.txt"
                         style={{ display: "none" }}
                         onChange={(e) => pickFile(e.target.files?.[0])}
                     />

@@ -64,6 +64,8 @@ notepad backend\.env
 # DB_HOST=localhost
 # DB_PORT=3306
 # DB_NAME=ai_skill_gap
+# Or use one URL instead of the DB_* values:
+# DATABASE_URL=mysql+pymysql://app_user:strong_password@localhost:3306/ai_skill_gap
 # AI_PROVIDER=auto          # auto = groq -> gemini -> keyword
 # GROQ_API_KEY=gsk_...      # https://console.groq.com/keys (30 RPM free, recommended)
 # GROQ_MODEL=llama-3.3-70b-versatile
@@ -84,6 +86,22 @@ npm --prefix frontend install
 npm --prefix frontend run dev
 # http://localhost:5173  (proxies /api → 8000, no CORS)
 ```
+
+---
+
+## 🐳 Docker Compose (recommended for deployment)
+
+Docker starts MySQL, the FastAPI API, and an Nginx-served production frontend with same-origin `/api` proxying.
+
+```bash
+cp .env.docker.example .env
+# Edit .env and set DB_PASSWORD and MYSQL_ROOT_PASSWORD.
+docker compose up --build
+```
+
+Open `http://localhost:8080` (or your `FRONTEND_PORT`). The backend is intentionally internal to Docker; Nginx proxies browser `/api/*` calls to it. On first launch, MySQL runs `backend/workbench/init.sql` automatically. For an existing `mysql_data` volume, run the documented `owner_token` migration in Workbench before using resume history.
+
+Stop the stack with `docker compose down`; add `-v` only if you deliberately want to delete local MySQL data.
 
 ---
 
@@ -124,10 +142,11 @@ npm --prefix frontend run dev
 | `uvicorn backend.main:app --reload --port 8000` | root | API (8000, docs at `/docs`) |
 | `npm --prefix frontend run dev` | root | Vite 8 dev (5173) |
 | `npm --prefix frontend run build` | root | Production build → `frontend/dist/` (13.7kB CSS, 70kB gz) |
-| `npm --prefix frontend test` | root | Vitest 11 tests (scoring) |
+| `npm --prefix frontend test` | root | Vitest unit tests (scoring) |
+| `python -m unittest discover -s backend/tests` | root | Backend unit tests (scoring, upload validation, rate limiting; no MySQL server needed) |
 | `pip install -r requirements.txt` | root | `fastapi, uvicorn[standard], sqlalchemy, pymysql, pypdf, requests, python-dotenv` (no `lxml` build needed) |
 
-**Env:** `VITE_API_URL` (optional, absolute API base; empty → uses `/api` proxy via `vite.config.js`)
+**Env:** `VITE_API_URL` (optional, browser-visible absolute API base; empty → uses `/api` proxy) and `VITE_PROXY_TARGET` (optional Vite server-side proxy target; defaults to `http://127.0.0.1:8000`).
 
 ---
 
@@ -141,7 +160,8 @@ All tables are `InnoDB utf8mb4`, `IF NOT EXISTS`:
 * `careers_v2` (id, domain_id FK, name, average_level)
 * `skills_v2` (id, name UQ, category)
 * `career_skill_requirements` (id, career_id FK, skill_id FK, required_level, UQ(career_id,skill_id))
-* `resume_analyses` (id, file_name, file_size, raw_text TEXT, extracted_skills JSON, target_career_id FK, extraction_source, created_at DATETIME)
+* `resume_analyses` (id, file_name, file_size, owner_token, raw_text TEXT optional, extracted_skills JSON, target_career_id FK, extraction_source, created_at DATETIME)
+  * Upload history is isolated by an opaque browser session token. It is not a replacement for authentication in a multi-user deployment.
 
 Seed your own data in Workbench or via `POST /api/...` — the code creates no dummy data.
 
@@ -154,7 +174,7 @@ totalRequired = Σ required_level (0-100 clamped)
 totalHave     = Σ min(inferred_or_user, required)
 match%        = round(totalHave/totalRequired*100)
 gap           = max(0, required - have)
-readiness     = ≥90 Excellent | ≥75 Strong | ≥60 Good | ≥40 Needs Improvement | <40 Beginner
+readiness     = ≥80 Highly Ready | ≥60 Career Ready | ≥40 Developing | <40 Beginner
 priority      = gap 0 None, ≤10 Low, ≤30 Medium, ≤50 High, >50 Critical
 ```
 
@@ -166,8 +186,11 @@ Frontend does local scoring for instant UI; backend `/api/analyze` mirrors it fo
 
 * `.env` is **gitignored** — only `.env.example` is committed. Never paste keys in screenshots/issues.
 * `/api/debug-db` is **gated by `DEBUG=true`** (404 in prod).
-* `CORS` is `GET,POST,OPTIONS` only, origin-locked via `ALLOWED_ORIGINS`.
+* `CORS` is origin-locked via `ALLOWED_ORIGINS`, accepts only `GET, POST, DELETE, OPTIONS`, and does not allow browser credentials.
 * Resume `5 MB` limit, `pypdf` + stdlib `zip` parsing (no `lxml` C++ build on Windows).
+* Resume history is isolated to an opaque browser session token; global history deletion is not available. Raw resume text is not persisted unless `STORE_RESUME_TEXT=true`.
+* AI-enabled resume analysis sends resume text to the configured Groq or Gemini provider. Obtain user consent before using this in a public deployment.
+* AI roadmap and resume-analysis requests are rate-limited per client IP in a single backend process. Configure the limits with `RATE_LIMIT_WINDOW_SECONDS`, `RESUME_ANALYZE_LIMIT`, and `AI_ROADMAP_LIMIT`; use a shared gateway/Redis limiter for multi-instance deployments.
 
 ---
 

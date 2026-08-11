@@ -9,7 +9,14 @@
 // For a deployment where the API lives elsewhere, set VITE_API_URL,
 // e.g. VITE_API_URL=https://api.example.com npm run build
 
+import { getResumeSession } from "../lib/storage";
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
+const RESUME_SESSION_HEADER = "X-Resume-Session";
+
+function resumeSessionHeaders() {
+    return { [RESUME_SESSION_HEADER]: getResumeSession() };
+}
 
 
 // =====================================================
@@ -187,10 +194,12 @@ export async function getAiRoadmap({
     skillGaps,
     strongSkills,
     education,
+    signal,
 }) {
 
     return apiRequest("/api/ai/roadmap", {
         method: "POST",
+        signal,
         headers: {
             "Content-Type": "application/json",
         },
@@ -229,6 +238,7 @@ export async function uploadResume(file, { targetCareerId, education } = {}) {
 
     const response = await fetch(`${API_BASE_URL}/api/resume/analyze`, {
         method: "POST",
+        headers: resumeSessionHeaders(),
         body: form,
     });
 
@@ -246,9 +256,14 @@ export async function uploadResume(file, { targetCareerId, education } = {}) {
 }
 
 export async function getResumeHistory(limit = 5) {
-    return apiRequest(`/api/resume/history?limit=${limit}`);
+    return apiRequest(`/api/resume/history?limit=${limit}`, {
+        headers: resumeSessionHeaders(),
+    });
 }
 
-export async function clearResumeHistory() {
-    return apiRequest("/api/resume/history", { method: "DELETE" });
+export async function deleteResumeHistoryItem(analysisId) {
+    return apiRequest(`/api/resume/history/${analysisId}`, {
+        method: "DELETE",
+        headers: resumeSessionHeaders(),
+    });
 }

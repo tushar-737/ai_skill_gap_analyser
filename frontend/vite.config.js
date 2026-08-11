@@ -1,32 +1,31 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
-export default defineConfig({
-    plugins: [react(), tailwindcss()],
+export default defineConfig(({ mode }) => {
+    // This is deliberately separate from VITE_API_URL: the former is used by
+    // Vite's server-to-server proxy, while the latter is browser-visible.
+    const env = loadEnv(mode, process.cwd(), "");
+    const proxyTarget = env.VITE_PROXY_TARGET || "http://127.0.0.1:8000";
 
-    // Bind to 0.0.0.0 so the app is reachable from any host
-    // (LAN, preview URLs, containers).
-    server: {
-        host: true,
-        port: 5173,
-        // Allow access from any host (preview tunnels, LAN IPs).
-        // In production this does not matter — Vite is a dev server.
-        allowedHosts: true,
-        proxy: {
-            // In development, the browser calls the app origin (/api/...)
-            // and Vite forwards the request to the FastAPI backend.
-            // This removes the hardcoded http://127.0.0.1:8000 from
-            // client code and works from any host (no CORS issues).
-            "/api": {
-                target: "http://127.0.0.1:8000",
-                changeOrigin: true,
+    return {
+        plugins: [react(), tailwindcss()],
+
+        server: {
+            host: true,
+            port: 5173,
+            allowedHosts: true,
+            proxy: {
+                "/api": {
+                    target: proxyTarget,
+                    changeOrigin: true,
+                },
             },
         },
-    },
 
-    preview: {
-        host: true,
-        port: 4173,
-    },
+        preview: {
+            host: true,
+            port: 4173,
+        },
+    };
 });

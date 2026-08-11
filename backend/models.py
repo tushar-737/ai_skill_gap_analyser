@@ -206,6 +206,10 @@ class ResumeAnalysis(Base):
 
     file_size = Column(Integer)
 
+    # Opaque client-generated identifier used to isolate each browser's history.
+    # It is not an authentication substitute for a multi-user production app.
+    owner_token = Column(String(64), index=True, nullable=True)
+
     raw_text = Column(Text)
 
     # { skills: [{ skill_id, name, inferred_level, evidence }], ... }

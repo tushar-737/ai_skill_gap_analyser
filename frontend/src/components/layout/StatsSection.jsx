@@ -25,16 +25,16 @@ export default function StatsSection() {
 
     const items = stats
         ? [
-              { value: `${stats.skills}+`, label: "Skills", sub: "in database" },
-              { value: `${stats.careers}+`, label: "Career Paths", sub: "v2 profiles" },
-              { value: `${stats.domains}+`, label: "Domains", sub: "fields" },
-              { value: `${stats.education_programs}+`, label: "Programs", sub: "education" },
+              { value: `${stats.skills}+`, label: "Skills", sub: "for your goals" },
+              { value: `${stats.careers}+`, label: "Career Paths", sub: "to explore" },
+              { value: `${stats.domains}+`, label: "Domains", sub: "career fields" },
+              { value: `${stats.education_programs}+`, label: "Programs", sub: "learning paths" },
           ]
         : [
-              { value: "50+", label: "Skills", sub: "curated" },
-              { value: "10+", label: "Career Paths", sub: "ready" },
-              { value: "5+", label: "Domains", sub: "fields" },
-              { value: "20+", label: "Profiles", sub: "analyzed" },
+              { value: "—", label: "Skills", sub: "loading options" },
+              { value: "—", label: "Career Paths", sub: "loading options" },
+              { value: "—", label: "Domains", sub: "loading options" },
+              { value: "—", label: "Programs", sub: "loading options" },
           ];
 
     return (

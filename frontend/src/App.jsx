@@ -36,7 +36,7 @@ function App() {
     const [selectedCareer, setSelectedCareer] = useState("");
     const [skillLevels, setSkillLevels] = useState({});
     const [showResults, setShowResults] = useState(false);
-    const [resumeInfo, setResumeInfo] = useState(null);
+    const [, setResumeInfo] = useState(null);
     const [historyRefresh, setHistoryRefresh] = useState(0);
     const [wizardStep, setWizardStep] = useState(0);
     const [showWelcome, setShowWelcome] = useState(false);

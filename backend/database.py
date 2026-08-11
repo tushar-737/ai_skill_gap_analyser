@@ -2,45 +2,56 @@ import os
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
+from sqlalchemy.engine import URL
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 
 # =====================================================
 # LOAD ENVIRONMENT VARIABLES — robust for Workbench + uvicorn
-# Looks for backend/.env when running from repo root, and also
-# tries the current working directory's .env as fallback.
 # =====================================================
 
-# Try backend/.env first (when `uvicorn backend.main:app` from repo root)
 _here = os.path.dirname(__file__)
 _backend_env = os.path.join(_here, ".env")
 if os.path.exists(_backend_env):
     load_dotenv(dotenv_path=_backend_env, override=False)
-
-# Also try CWD .env (when running from backend/ dir or custom setup)
 load_dotenv(override=False)
 
 
 # =====================================================
-# MYSQL DATABASE CONFIGURATION
+# DATABASE CONFIGURATION
 # =====================================================
+# Prefer a complete DATABASE_URL for hosted deployments. Otherwise require
+# individual MySQL values explicitly; insecure root/password defaults are never
+# silently used.
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 
-DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "1234")
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = os.getenv("DB_PORT", "3306")
-DB_NAME = os.getenv("DB_NAME", "ai_skill_gap")
+if not DATABASE_URL:
+    required_db_vars = ("DB_USER", "DB_PASSWORD", "DB_HOST", "DB_PORT", "DB_NAME")
+    missing_db_vars = [name for name in required_db_vars if not os.getenv(name)]
+    if missing_db_vars:
+        missing = ", ".join(missing_db_vars)
+        raise RuntimeError(
+            f"Missing database configuration: {missing}. "
+            "Copy backend/.env.example to backend/.env and configure it."
+        )
 
+    try:
+        db_port = int(os.environ["DB_PORT"])
+    except ValueError as exc:
+        raise RuntimeError("DB_PORT must be a valid integer.") from exc
 
-DATABASE_URL = (
-    f"mysql+pymysql://"
-    f"{DB_USER}:{DB_PASSWORD}"
-    f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-)
+    DATABASE_URL = URL.create(
+        "mysql+pymysql",
+        username=os.environ["DB_USER"],
+        password=os.environ["DB_PASSWORD"],
+        host=os.environ["DB_HOST"],
+        port=db_port,
+        database=os.environ["DB_NAME"],
+    )
 
 
 # =====================================================
-# DATABASE ENGINE
+# DATABASE ENGINE / SESSION
 # =====================================================
 
 engine = create_engine(
@@ -49,34 +60,18 @@ engine = create_engine(
     pool_recycle=3600,
 )
 
-
-# =====================================================
-# SESSION
-# =====================================================
-
 SessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
     bind=engine,
 )
 
-
-# =====================================================
-# BASE MODEL
-# =====================================================
-
 Base = declarative_base()
 
 
-# =====================================================
-# DATABASE SESSION
-# =====================================================
-
 def get_db():
     db = SessionLocal()
-
     try:
         yield db
-
     finally:
         db.close()
