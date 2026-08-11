@@ -1079,18 +1079,19 @@ _resume_cache: Dict[str, tuple] = {}  # key -> (response_dict, timestamp)
 
 
 class SkillGapItem(BaseModel):
-    name: str
-    current: int = 0
-    required: int = 0
-    gap: int = 0
+    name: str = Field(min_length=1, max_length=150)
+    current: int = Field(default=0, ge=0, le=100)
+    required: int = Field(default=0, ge=0, le=100)
+    gap: int = Field(default=0, ge=0, le=100)
 
 
 class AiRoadmapRequest(BaseModel):
-    career_name: str
-    match_score: int = 0
-    skill_gaps: List[SkillGapItem] = Field(default_factory=list)
-    strong_skills: List[str] = Field(default_factory=list)
-    education: Optional[str] = None
+    career_name: str = Field(min_length=1, max_length=150)
+    match_score: int = Field(default=0, ge=0, le=100)
+    # Bound untrusted input before it is included in an AI-provider prompt.
+    skill_gaps: List[SkillGapItem] = Field(default_factory=list, max_length=10)
+    strong_skills: List[str] = Field(default_factory=list, max_length=20)
+    education: Optional[str] = Field(default=None, max_length=200)
 
 
 ROADMAP_JSON_SCHEMA = {

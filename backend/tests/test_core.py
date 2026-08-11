@@ -11,6 +11,7 @@ from types import SimpleNamespace
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
 
 from fastapi import HTTPException
+from pydantic import ValidationError
 
 from backend import main
 
@@ -36,6 +37,19 @@ class ReadinessTests(unittest.TestCase):
         self.assertEqual(main.get_priority(30), "Medium")
         self.assertEqual(main.get_priority(50), "High")
         self.assertEqual(main.get_priority(51), "Critical")
+
+
+class RoadmapInputTests(unittest.TestCase):
+    def test_rejects_oversized_roadmap_input(self):
+        with self.assertRaises(ValidationError):
+            main.AiRoadmapRequest(
+                career_name="Data Engineer",
+                skill_gaps=[{"name": "Python"}] * 11,
+            )
+
+    def test_rejects_out_of_range_skill_levels(self):
+        with self.assertRaises(ValidationError):
+            main.SkillGapItem(name="Python", current=101)
 
 
 class ResumeValidationTests(unittest.TestCase):
