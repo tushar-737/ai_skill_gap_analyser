@@ -126,7 +126,8 @@ npm --prefix frontend run dev
 | `uvicorn backend.main:app --reload --port 8000` | root | API (8000, docs at `/docs`) |
 | `npm --prefix frontend run dev` | root | Vite 8 dev (5173) |
 | `npm --prefix frontend run build` | root | Production build → `frontend/dist/` (13.7kB CSS, 70kB gz) |
-| `npm --prefix frontend test` | root | Vitest 11 tests (scoring) |
+| `npm --prefix frontend test` | root | Vitest unit tests (scoring) |
+| `python -m unittest discover -s backend/tests` | root | Backend unit tests (scoring, upload validation, rate limiting; no MySQL server needed) |
 | `pip install -r requirements.txt` | root | `fastapi, uvicorn[standard], sqlalchemy, pymysql, pypdf, requests, python-dotenv` (no `lxml` build needed) |
 
 **Env:** `VITE_API_URL` (optional, browser-visible absolute API base; empty → uses `/api` proxy) and `VITE_PROXY_TARGET` (optional Vite server-side proxy target; defaults to `http://127.0.0.1:8000`).
