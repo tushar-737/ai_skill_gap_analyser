@@ -171,6 +171,7 @@ Frontend does local scoring for instant UI; backend `/api/analyze` mirrors it fo
 * Resume `5 MB` limit, `pypdf` + stdlib `zip` parsing (no `lxml` C++ build on Windows).
 * Resume history is isolated to an opaque browser session token; global history deletion is not available. Raw resume text is not persisted unless `STORE_RESUME_TEXT=true`.
 * AI-enabled resume analysis sends resume text to the configured Groq or Gemini provider. Obtain user consent before using this in a public deployment.
+* AI roadmap and resume-analysis requests are rate-limited per client IP in a single backend process. Configure the limits with `RATE_LIMIT_WINDOW_SECONDS`, `RESUME_ANALYZE_LIMIT`, and `AI_ROADMAP_LIMIT`; use a shared gateway/Redis limiter for multi-instance deployments.
 
 ---
 

@@ -3,12 +3,15 @@ import json
 import re
 import io
 import logging
+import time
+from collections import defaultdict, deque
+from threading import Lock
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
 import requests
 
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form, Header
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from pydantic import BaseModel, Field
@@ -66,6 +69,45 @@ app.add_middleware(
     allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
+
+
+# =====================================================
+# IN-MEMORY REQUEST LIMITS
+# =====================================================
+# These limits protect AI quota and upload capacity in a single FastAPI
+# process. For multi-instance production deployments, use a shared limiter
+# such as Redis or an API gateway instead.
+RATE_LIMIT_WINDOW_SECONDS = max(1, int(os.getenv("RATE_LIMIT_WINDOW_SECONDS", "60")))
+RESUME_ANALYZE_LIMIT = max(1, int(os.getenv("RESUME_ANALYZE_LIMIT", "5")))
+AI_ROADMAP_LIMIT = max(1, int(os.getenv("AI_ROADMAP_LIMIT", "15")))
+TRUST_PROXY_HEADERS = os.getenv("TRUST_PROXY_HEADERS", "false").lower() == "true"
+_rate_limit_hits = defaultdict(deque)
+_rate_limit_lock = Lock()
+
+
+def _client_identifier(request: Request) -> str:
+    if TRUST_PROXY_HEADERS:
+        forwarded = request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+        if forwarded:
+            return forwarded
+    return request.client.host if request.client else "unknown"
+
+
+def _enforce_rate_limit(request: Request, bucket: str, limit: int) -> None:
+    now = time.monotonic()
+    key = f"{bucket}:{_client_identifier(request)}"
+    with _rate_limit_lock:
+        hits = _rate_limit_hits[key]
+        while hits and now - hits[0] >= RATE_LIMIT_WINDOW_SECONDS:
+            hits.popleft()
+        if len(hits) >= limit:
+            retry_after = max(1, int(RATE_LIMIT_WINDOW_SECONDS - (now - hits[0])))
+            raise HTTPException(
+                status_code=429,
+                detail="Too many requests. Please try again shortly.",
+                headers={"Retry-After": str(retry_after)},
+            )
+        hits.append(now)
 
 
 # =====================================================
@@ -1287,7 +1329,8 @@ def fallback_roadmap(payload: AiRoadmapRequest) -> dict:
 
 
 @app.post("/api/ai/roadmap")
-def get_ai_roadmap(payload: AiRoadmapRequest):
+def get_ai_roadmap(payload: AiRoadmapRequest, request: Request):
+    _enforce_rate_limit(request, "ai-roadmap", AI_ROADMAP_LIMIT)
     roadmap = _call_ai_roadmap(payload)
 
     if roadmap is None:
@@ -1637,6 +1680,7 @@ def _keyword_extract(
 
 @app.post("/api/resume/analyze")
 async def analyze_resume(
+    request: Request,
     file: UploadFile = File(...),
     target_career_id: Optional[int] = Form(None),
     education: Optional[str] = Form(None),
@@ -1644,6 +1688,7 @@ async def analyze_resume(
     db: Session = Depends(get_db),
 ):
     # --- Validate ---
+    _enforce_rate_limit(request, "resume-analyze", RESUME_ANALYZE_LIMIT)
     owner_token = _require_resume_session(resume_session)
     if not file or not file.filename:
         raise HTTPException(status_code=400, detail="No file uploaded")
