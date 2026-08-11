@@ -95,6 +95,7 @@ export default function ResumeUploader({ selectedCareer = "", selectedEducation 
                     <input
                         ref={inputRef}
                         type="file"
+                        aria-label="Choose a resume file"
                         accept=".pdf,.docx,.txt"
                         style={{ display: "none" }}
                         onChange={(e) => pickFile(e.target.files?.[0])}
@@ -143,6 +144,7 @@ export default function ResumeUploader({ selectedCareer = "", selectedEducation 
                     <input
                         ref={inputRef}
                         type="file"
+                        aria-label="Choose a resume file"
                         accept=".pdf,.docx,.txt"
                         style={{ display: "none" }}
                         onChange={(e) => pickFile(e.target.files?.[0])}

@@ -63,7 +63,7 @@ export default function ResumeHistory({ onReload = () => {}, refreshKey = 0 }) {
                     </div>
                 </div>
                 <div style={{ display: "flex", gap: 6 }}>
-                    <button type="button" className="secondary-button" onClick={load} style={{ padding: "6px 12px", fontSize: 13 }} title="Refresh">
+                    <button type="button" className="secondary-button" onClick={load} style={{ padding: "6px 12px", fontSize: 13 }} title="Refresh" aria-label="Refresh resume history">
                         ↻
                     </button>
                 </div>

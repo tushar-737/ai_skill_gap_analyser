@@ -27,6 +27,12 @@ button {
     cursor: pointer;
 }
 
+/* Keep keyboard navigation visible without affecting mouse interactions. */
+:focus-visible {
+    outline: 3px solid #2563eb;
+    outline-offset: 3px;
+}
+
 a {
     color: inherit;
     text-decoration: none;
