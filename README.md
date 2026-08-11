@@ -89,6 +89,22 @@ npm --prefix frontend run dev
 
 ---
 
+## 🐳 Docker Compose (recommended for deployment)
+
+Docker starts MySQL, the FastAPI API, and an Nginx-served production frontend with same-origin `/api` proxying.
+
+```bash
+cp .env.docker.example .env
+# Edit .env and set DB_PASSWORD and MYSQL_ROOT_PASSWORD.
+docker compose up --build
+```
+
+Open `http://localhost:8080` (or your `FRONTEND_PORT`). The backend is intentionally internal to Docker; Nginx proxies browser `/api/*` calls to it. On first launch, MySQL runs `backend/workbench/init.sql` automatically. For an existing `mysql_data` volume, run the documented `owner_token` migration in Workbench before using resume history.
+
+Stop the stack with `docker compose down`; add `-v` only if you deliberately want to delete local MySQL data.
+
+---
+
 ## 🔑 AI Passkey (Groq = best for free)
 
 **We support both — `AI_PROVIDER=auto` tries Groq first (faster + higher quota), then Gemini.**
