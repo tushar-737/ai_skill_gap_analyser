@@ -1360,7 +1360,9 @@ def get_ai_roadmap(payload: AiRoadmapRequest, request: Request):
 #    Workbench users can then `SELECT * FROM resume_analyses`.
 
 MAX_RESUME_BYTES = 5 * 1024 * 1024  # 5 MB
-ALLOWED_RESUME_EXTS = {".pdf", ".docx", ".doc", ".txt"}
+ALLOWED_RESUME_EXTS = {".pdf", ".docx", ".txt"}
+MAX_DOCX_UNCOMPRESSED_BYTES = 20 * 1024 * 1024
+MAX_DOCX_ARCHIVE_ENTRIES = 2_000
 RESUME_SESSION_HEADER = "X-Resume-Session"
 STORE_RESUME_TEXT = os.getenv("STORE_RESUME_TEXT", "false").lower() == "true"
 
@@ -1374,6 +1376,32 @@ def _require_resume_session(session_token: Optional[str]) -> str:
             detail=f"A valid {RESUME_SESSION_HEADER} header is required.",
         )
     return token
+
+
+def _validate_resume_content(data: bytes, filename: str) -> None:
+    """Validate the file signature and DOCX archive bounds before parsing it."""
+    name = (filename or "").lower()
+    if name.endswith(".pdf"):
+        if not data.startswith(b"%PDF-"):
+            raise HTTPException(status_code=422, detail="The uploaded file is not a valid PDF.")
+        return
+
+    if name.endswith(".docx"):
+        import zipfile
+
+        try:
+            with zipfile.ZipFile(io.BytesIO(data)) as archive:
+                entries = archive.infolist()
+                if len(entries) > MAX_DOCX_ARCHIVE_ENTRIES:
+                    raise HTTPException(status_code=422, detail="DOCX contains too many archive entries.")
+                if sum(entry.file_size for entry in entries) > MAX_DOCX_UNCOMPRESSED_BYTES:
+                    raise HTTPException(status_code=422, detail="DOCX expands beyond the allowed size.")
+                if "word/document.xml" not in archive.namelist():
+                    raise HTTPException(status_code=422, detail="The uploaded file is not a valid DOCX document.")
+        except HTTPException:
+            raise
+        except (zipfile.BadZipFile, zipfile.LargeZipFile):
+            raise HTTPException(status_code=422, detail="The uploaded file is not a valid DOCX document.")
 
 
 def _extract_text_from_bytes(data: bytes, filename: str) -> str:
@@ -1401,8 +1429,8 @@ def _extract_text_from_bytes(data: bytes, filename: str) -> str:
         except Exception:
             return ""
 
-    # --- DOCX / DOC (docx parsed without lxml: zip + stdlib xml) ---
-    if name.endswith(".docx") or name.endswith(".doc"):
+    # --- DOCX (parsed without lxml: zip + stdlib xml) ---
+    if name.endswith(".docx"):
         # Try python-docx first if available (needs lxml), else fallback to zip+xml
         try:
             import docx  # type: ignore
@@ -1429,12 +1457,6 @@ def _extract_text_from_bytes(data: bytes, filename: str) -> str:
                 return txt
         except Exception as e:
             print("DOCX (zip) Extract note:", e)
-        # Old .doc (not zip) — fall back to text decode
-        try:
-            return data.decode("utf-8", errors="ignore")
-        except Exception:
-            return ""
-
     # --- TXT / fallback ---
     try:
         return data.decode("utf-8", errors="ignore").strip()
@@ -1705,6 +1727,8 @@ async def analyze_resume(
         raise HTTPException(status_code=400, detail="Empty file")
     if len(data) > MAX_RESUME_BYTES:
         raise HTTPException(status_code=400, detail="File too large (max 5 MB)")
+
+    _validate_resume_content(data, file.filename)
 
     # --- Extract text ---
     raw_text = _extract_text_from_bytes(data, file.filename).strip()

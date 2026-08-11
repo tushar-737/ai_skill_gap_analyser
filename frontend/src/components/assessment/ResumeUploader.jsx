@@ -21,7 +21,7 @@ export default function ResumeUploader({ selectedCareer = "", selectedEducation 
         setResult(null);
         if (!nextFile) return;
         const ext = nextFile.name.toLowerCase().split(".").pop();
-        if (!["pdf", "docx", "doc", "txt"].includes(ext)) {
+        if (!["pdf", "docx", "txt"].includes(ext)) {
             setError("Please upload a PDF or DOCX resume.");
             return;
         }
@@ -95,7 +95,7 @@ export default function ResumeUploader({ selectedCareer = "", selectedEducation 
                     <input
                         ref={inputRef}
                         type="file"
-                        accept=".pdf,.docx,.doc,.txt"
+                        accept=".pdf,.docx,.txt"
                         style={{ display: "none" }}
                         onChange={(e) => pickFile(e.target.files?.[0])}
                     />
@@ -143,7 +143,7 @@ export default function ResumeUploader({ selectedCareer = "", selectedEducation 
                     <input
                         ref={inputRef}
                         type="file"
-                        accept=".pdf,.docx,.doc,.txt"
+                        accept=".pdf,.docx,.txt"
                         style={{ display: "none" }}
                         onChange={(e) => pickFile(e.target.files?.[0])}
                     />
