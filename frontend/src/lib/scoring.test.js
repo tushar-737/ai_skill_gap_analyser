@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
     computeResults,
     computeCareerRecommendations,
+    dedupeSkills,
 } from "./scoring";
 
 // =====================================================
@@ -23,6 +24,21 @@ const skills = [
         required_level: 60,
     },
 ];
+
+describe("dedupeSkills", () => {
+    it("keeps one row when the same library is listed twice", () => {
+        const unique = dedupeSkills([
+            { skill_id: 1, name: "Pandas", required_level: 80 },
+            { skill_id: 2, name: "pandas", required_level: 92 },
+            { skill_id: 3, name: "NumPy", required_level: 90 },
+            { skill_id: 4, name: "numpy", required_level: 70 },
+        ]);
+
+        expect(unique).toHaveLength(2);
+        expect(unique.find((s) => s.name.toLowerCase() === "pandas").required_level).toBe(92);
+        expect(unique.find((s) => s.name.toLowerCase() === "numpy").skill_id).toBe(3);
+    });
+});
 
 describe("computeResults", () => {
     it("returns null when there are no skills", () => {

@@ -16,6 +16,34 @@
 // Returns { matchScore, readiness, gaps, strongSkills, skillGaps }
 // or null when there are no skills to analyze.
 
+// Collapse duplicate names (Pandas / pandas / Python Pandas) so the
+// rater never asks the same library twice if a noisy payload slips through.
+export function dedupeSkills(skills = []) {
+    const best = new Map();
+
+    skills.forEach((skill) => {
+        const label = String(
+            skill.name || skill.skill || skill.skill_name || ""
+        )
+            .trim()
+            .toLowerCase()
+            .replace(/[\s_\-./]+/g, " ");
+
+        if (!label) return;
+
+        const previous = best.get(label);
+        const required = Number(skill.required_level) || 0;
+        if (
+            !previous ||
+            required > (Number(previous.required_level) || 0)
+        ) {
+            best.set(label, skill);
+        }
+    });
+
+    return Array.from(best.values());
+}
+
 export function computeResults(requiredSkills, skillLevels = {}) {
     if (requiredSkills.length === 0) {
         return null;

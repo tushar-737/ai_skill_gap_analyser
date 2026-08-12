@@ -448,8 +448,8 @@ function App() {
                         <div className="skill-intro">
                             <h3>📊 Rate your current skills</h3>
                             <p>
-                                Move each slider to the level you think best represents your current ability. <strong>0% = Beginner · 50% = Intermediate · 100% = Advanced</strong>. Your score will be
-                                compared with the level required for your target career.
+                                These are the <strong>main skills</strong> for this role — extras and duplicates such as repeated Pandas/NumPy or unrelated languages are hidden. Move each slider to
+                                the level you think best represents your current ability. <strong>0% = Beginner · 50% = Intermediate · 100% = Advanced</strong>.
                             </p>
                             <div className="skill-scale">
                                 <span>0 Beginner</span>

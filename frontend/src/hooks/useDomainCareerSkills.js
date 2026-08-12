@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getCareersWithSkillsByDomain } from "../api/api";
+import { dedupeSkills } from "../lib/scoring";
 
 export function useDomainCareerSkills(selectedDomain) {
     const [domainCareerSkills, setDomainCareerSkills] =
@@ -33,7 +34,12 @@ export function useDomainCareerSkills(selectedDomain) {
                     );
                 }
 
-                setDomainCareerSkills(data);
+                setDomainCareerSkills(
+                    data.map((career) => ({
+                        ...career,
+                        skills: dedupeSkills(career.skills || []),
+                    }))
+                );
             } catch (error) {
                 console.error(
                     "CAREER RECOMMENDATIONS ERROR:",

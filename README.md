@@ -24,6 +24,7 @@ The project combines **React, FastAPI, MySQL, and AI-based recommendation techni
 - Compare current skill level with required skill level
 - Identify missing and weak skills
 - Calculate career compatibility
+- Data Science / ML roles show only the **main skills** (Python, SQL, Pandas, NumPy, Machine Learning). Repeated libraries and extra languages such as Java/C++ are hidden.
 
 ### 🔎 Searchable Career Selection
 - Search careers and domains

@@ -14,6 +14,66 @@ from fastapi import HTTPException
 from pydantic import ValidationError
 
 from backend import main
+from backend.skill_catalog import dedupe_skills, select_main_skills
+
+
+class MainSkillCatalogTests(unittest.TestCase):
+    def test_data_scientist_keeps_only_core_skills(self):
+        noisy = [
+            {"skill_id": 1, "name": "Python", "required_level": 95},
+            {"skill_id": 2, "name": "Pandas", "required_level": 92},
+            {"skill_id": 3, "name": "pandas", "required_level": 80},
+            {"skill_id": 4, "name": "NumPy", "required_level": 90},
+            {"skill_id": 5, "name": "numpy", "required_level": 70},
+            {"skill_id": 6, "name": "Java", "required_level": 90},
+            {"skill_id": 7, "name": "C++", "required_level": 85},
+            {"skill_id": 8, "name": "C#", "required_level": 85},
+            {"skill_id": 9, "name": "Machine Learning", "required_level": 95},
+            {"skill_id": 10, "name": "SQL", "required_level": 85},
+            {"skill_id": 11, "name": "Excel", "required_level": 70},
+            {"skill_id": 12, "name": "Engineering Drawing", "required_level": 90},
+        ]
+
+        selected = select_main_skills("Data Scientist", noisy)
+        names = [item["name"] for item in selected]
+
+        self.assertIn("Python", names)
+        self.assertIn("Pandas", names)
+        self.assertIn("NumPy", names)
+        self.assertIn("Machine Learning", names)
+        self.assertNotIn("Java", names)
+        self.assertNotIn("C++", names)
+        self.assertNotIn("C#", names)
+        self.assertNotIn("Excel", names)
+        self.assertNotIn("Engineering Drawing", names)
+        self.assertLessEqual(len(selected), 10)
+        self.assertEqual(len([n for n in names if n.lower() == "pandas"]), 1)
+        self.assertEqual(len([n for n in names if n.lower() == "numpy"]), 1)
+
+    def test_dedupe_keeps_higher_required_level(self):
+        unique = dedupe_skills(
+            [
+                {"name": "Pandas", "required_level": 70},
+                {"name": "pandas", "required_level": 92},
+            ]
+        )
+        self.assertEqual(len(unique), 1)
+        self.assertEqual(unique[0]["required_level"], 92)
+
+    def test_unlisted_career_drops_filler_languages(self):
+        selected = select_main_skills(
+            "Cloud Engineer",
+            [
+                {"name": "AWS", "required_level": 90},
+                {"name": "Docker", "required_level": 85},
+                {"name": "Java", "required_level": 80},
+                {"name": "Engineering Drawing", "required_level": 90},
+                {"name": "Linux", "required_level": 80},
+            ],
+            domain_name="Cloud Computing",
+        )
+        names = [item["name"] for item in selected]
+        self.assertEqual(names, ["AWS", "Docker", "Linux"])
 
 
 class ReadinessTests(unittest.TestCase):

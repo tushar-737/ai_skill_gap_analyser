@@ -21,6 +21,7 @@ from sqlalchemy import text
 
 from .database import get_db
 from . import models
+from .skill_catalog import select_main_skills
 
 logger = logging.getLogger(__name__)
 
@@ -358,6 +359,23 @@ def get_career_skills(
     db: Session = Depends(get_db)
 ):
 
+    career = (
+        db.query(models.Career)
+        .filter(models.Career.id == career_id)
+        .first()
+    )
+
+    if career is None:
+        raise HTTPException(status_code=404, detail="Career not found.")
+
+    domain = None
+    if career.domain_id:
+        domain = (
+            db.query(models.Domain)
+            .filter(models.Domain.id == career.domain_id)
+            .first()
+        )
+
     results = (
         db.query(
             models.Skill,
@@ -378,7 +396,7 @@ def get_career_skills(
         .all()
     )
 
-    return [
+    raw_skills = [
         {
             "skill_id": skill.id,
             "name": skill.name,
@@ -388,6 +406,12 @@ def get_career_skills(
         }
         for skill, required_level in results
     ]
+
+    return select_main_skills(
+        career.name,
+        raw_skills,
+        domain_name=domain.name if domain else None,
+    )
 
 
 # =====================================================
@@ -501,13 +525,12 @@ def get_careers_with_skills_by_domain(
         )
 
 
-    for career_id in career_skills:
-
-        career_skills[career_id].sort(
-            key=lambda x: x["required_level"],
-            reverse=True,
-        )
-
+    domain = (
+        db.query(models.Domain)
+        .filter(models.Domain.id == domain_id)
+        .first()
+    )
+    domain_name = domain.name if domain else None
 
     return [
         {
@@ -515,9 +538,10 @@ def get_careers_with_skills_by_domain(
             "name": career.name,
             "description": career.description,
             "average_level": career.average_level,
-            "skills": career_skills.get(
-                career.id,
-                [],
+            "skills": select_main_skills(
+                career.name,
+                career_skills.get(career.id, []),
+                domain_name=domain_name,
             ),
         }
         for career in careers
@@ -1698,6 +1722,19 @@ def _keyword_extract(
                 "skill_id": skill.id,
                 "category": skill.category,
             })
+        # Also handle alias hits where resume has alias but skill ieck for "expert/advanced/lead"
+            level = 60 + min((count - 1) * 5, 15)
+            if re.search(rf"{re.escape(n)}.*(expert|advanced|lead|senior|proficient)", lower[:2000]):
+                level = min(85, level + 10)
+            if re.search(rf"(expert|advanced).* {re.escape(n)}", lower[:2000]):
+                level = min(85, level + 10)
+            out.append({
+                "name": skill.name,
+                "inferred_level": min(95, level),
+                "evidence": f"Found '{skill.name}' in resume",
+                "skill_id": skill.id,
+                "category": skill.category,
+            })
         # Also handle alias hits where resume has alias but skill is canonical
     # If nothing found, return empty but keep source marker
     return {"skills": out, "source": "keyword"}
@@ -1838,12 +1875,26 @@ async def analyze_resume(
                     .filter(models.CareerSkillRequirement.career_id == career.id)
                     .all()
                 )
+                main_reqs = select_main_skills(
+                    career.name,
+                    [
+                        {
+                            "skill_id": skill.id,
+                            "name": skill.name,
+                            "required_level": req,
+                            "skill": skill,
+                        }
+                        for skill, req in reqs
+                    ],
+                )
                 # build dict skill_id -> inferred
                 inferred_map = {m["skill_id"]: m["inferred_level"] for m in mapped if m["skill_id"] is not None}
                 total_req = 0
                 total_have = 0
                 gaps = []
-                for skill, req in reqs:
+                for item in main_reqs:
+                    skill = item["skill"]
+                    req = item["required_level"]
                     have = inferred_map.get(skill.id, 0)
                     total_req += max(0, min(100, int(req)))
                     total_have += min(have, int(req))
