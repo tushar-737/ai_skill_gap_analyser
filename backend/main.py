@@ -22,6 +22,7 @@ from sqlalchemy import text
 from .database import get_db
 from . import models
 from .skill_catalog import select_main_skills
+from .education_catalog import dedupe_education_programs
 
 logger = logging.getLogger(__name__)
 
@@ -199,16 +200,18 @@ def get_education_programs(
         .all()
     )
 
-    return [
-        {
-            "id": program.id,
-            "category_id": program.category_id,
-            "name": program.name,
-            "level": program.level,
-            "description": program.description,
-        }
-        for program in programs
-    ]
+    return dedupe_education_programs(
+        [
+            {
+                "id": program.id,
+                "category_id": program.category_id,
+                "name": program.name,
+                "level": program.level,
+                "description": program.description,
+            }
+            for program in programs
+        ]
+    )
 
 
 # =====================================================

@@ -3,6 +3,7 @@ import {
     getEducationPrograms,
     getDomains,
 } from "../api/api";
+import { dedupeEducationPrograms } from "../lib/education";
 
 export function useInitialData(onError = () => {}) {
     const [education, setEducation] = useState([]);

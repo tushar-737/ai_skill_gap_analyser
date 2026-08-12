@@ -15,6 +15,7 @@ from pydantic import ValidationError
 
 from backend import main
 from backend.skill_catalog import dedupe_skills, select_main_skills
+from backend.education_catalog import dedupe_education_programs
 
 
 class MainSkillCatalogTests(unittest.TestCase):
@@ -88,6 +89,24 @@ class MainSkillCatalogTests(unittest.TestCase):
         )
         names = [item["name"] for item in selected]
         self.assertEqual(names, ["AWS", "Docker", "Linux"])
+
+
+class EducationDedupeTests(unittest.TestCase):
+    def test_collapses_bca_and_bcom_spellings(self):
+        unique = dedupe_education_programs(
+            [
+                {"id": 4, "name": "B.C.A."},
+                {"id": 1, "name": "BCA"},
+                {"id": 7, "name": "BCom"},
+                {"id": 3, "name": "B.Com"},
+                {"id": 9, "name": "B.Com Hons"},
+                {"id": 2, "name": "MCA"},
+            ]
+        )
+        names = [item["name"] for item in unique]
+        self.assertEqual(names, ["B.Com", "B.Com Hons", "BCA", "MCA"])
+        self.assertEqual(next(item["id"] for item in unique if item["name"] == "BCA"), 1)
+        self.assertEqual(next(item["id"] for item in unique if item["name"] == "B.Com"), 3)
 
 
 class ReadinessTests(unittest.TestCase):
