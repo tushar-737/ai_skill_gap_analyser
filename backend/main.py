@@ -1707,9 +1707,7 @@ def _keyword_extract(
                         found = True
                         break
         if found:
-            # Infer level by frequency + context clues
             count = lower.count(n)
-            # Base 60, +5 per extra mention up to 75, check for "expert/advanced/lead"
             level = 60 + min((count - 1) * 5, 15)
             if re.search(rf"{re.escape(n)}.*(expert|advanced|lead|senior|proficient)", lower[:2000]):
                 level = min(85, level + 10)
@@ -1722,21 +1720,6 @@ def _keyword_extract(
                 "skill_id": skill.id,
                 "category": skill.category,
             })
-        # Also handle alias hits where resume has alias but skill ieck for "expert/advanced/lead"
-            level = 60 + min((count - 1) * 5, 15)
-            if re.search(rf"{re.escape(n)}.*(expert|advanced|lead|senior|proficient)", lower[:2000]):
-                level = min(85, level + 10)
-            if re.search(rf"(expert|advanced).* {re.escape(n)}", lower[:2000]):
-                level = min(85, level + 10)
-            out.append({
-                "name": skill.name,
-                "inferred_level": min(95, level),
-                "evidence": f"Found '{skill.name}' in resume",
-                "skill_id": skill.id,
-                "category": skill.category,
-            })
-        # Also handle alias hits where resume has alias but skill is canonical
-    # If nothing found, return empty but keep source marker
     return {"skills": out, "source": "keyword"}
 
 

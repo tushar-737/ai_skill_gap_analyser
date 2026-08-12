@@ -454,8 +454,10 @@ function App() {
                         <div className="skill-intro">
                             <h3>📊 Rate your current skills</h3>
                             <p>
-                                These are the <strong>main skills</strong> for this role — extras and duplicates such as repeated Pandas/NumPy or unrelated languages are hidden. Move each slider to
-                                the level you think best represents your current ability. <strong>0% = Beginner · 50% = Intermediate · 100% = Advanced</strong>.
+                                These are the <strong>main Data Science skills only</strong>:
+                                Python, R, SQL, Statistics, Pandas, NumPy, Data Analysis, Matplotlib
+                                (plus Machine Learning and Scikit-learn for Data Scientist).
+                                Extra languages and repeated names are hidden.
                             </p>
                             <div className="skill-scale">
                                 <span>0 Beginner</span>

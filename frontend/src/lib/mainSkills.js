@@ -1,9 +1,9 @@
-// Keep the rater to the skills that actually define a role.
-// Seed data repeats Pandas/NumPy and dumps extra languages onto
-// Data Science careers. This runs in the browser so a stale API
-// cannot keep showing the long list.
+// Data Science field: only these unique main skills.
+// Do not also show Supervised/Unsupervised/Feature Engineering,
+// Statistics & Probability, Pandas & NumPy, or Data Visualization —
+// those repeat Statistics, Pandas, NumPy, and Matplotlib.
 
-export const MAX_MAIN_SKILLS = 6;
+export const MAX_MAIN_SKILLS = 10;
 
 const ALIASES = {
     np: "numpy",
@@ -11,84 +11,102 @@ const ALIASES = {
     pd: "pandas",
     pandas: "pandas",
     "python pandas": "pandas",
+    "pandas numpy": "pandas",
+    "pandas & numpy": "pandas",
     sklearn: "scikit-learn",
     "scikit learn": "scikit-learn",
     "scikit-learn": "scikit-learn",
     ml: "machine learning",
     "machine-learning": "machine learning",
     dl: "deep learning",
-    powerbi: "power bi",
-    "ms excel": "excel",
-    "microsoft excel": "excel",
-    eda: "exploratory data analysis",
-    "data wrangling": "data cleaning",
+    stats: "statistics",
+    "statistics probability": "statistics",
+    "statistics & probability": "statistics",
     "descriptive statistics": "statistics",
     "inferential statistics": "statistics",
-    stats: "statistics",
+    probability: "statistics",
     nlp: "natural language processing",
-    mysql: "sql",
-    postgresql: "sql",
-    postgres: "sql",
+    eda: "data analysis",
+    "exploratory data analysis": "data analysis",
+    "data wrangling": "data analysis",
+    "data cleaning": "data analysis",
+    "data visualization": "matplotlib",
 };
+
+const DATA_SCIENCE_MAIN = [
+    "Python",
+    "R",
+    "SQL",
+    "Statistics",
+    "Pandas",
+    "NumPy",
+    "Data Analysis",
+    "Matplotlib",
+];
+
+const DATA_SCIENTIST_MAIN = [
+    ...DATA_SCIENCE_MAIN,
+    "Machine Learning",
+    "Scikit-learn",
+];
+
+const AI_ML_MAIN = [
+    "Python",
+    "SQL",
+    "Statistics",
+    "Pandas",
+    "NumPy",
+    "Machine Learning",
+    "Deep Learning",
+    "Natural Language Processing",
+];
 
 export const CORE_SKILLS_BY_CAREER = {
-    "data analyst": ["Python", "SQL", "Excel", "Power BI", "Statistics", "Data Cleaning"],
-    "data scientist": ["Python", "SQL", "Pandas", "Machine Learning", "Statistics", "Scikit-learn"],
-    "business intelligence analyst": ["SQL", "Excel", "Power BI", "Tableau", "Data Analysis", "Dashboard Design"],
-    "data visualization specialist": ["Tableau", "Power BI", "Python", "Dashboard Design", "Data Storytelling"],
-    "quantitative analyst": ["Python", "SQL", "Statistics", "Probability", "Regression Analysis"],
-    "machine learning engineer": ["Python", "Machine Learning", "Scikit-learn", "SQL", "Feature Engineering"],
-    "ai engineer": ["Python", "Machine Learning", "Deep Learning", "PyTorch", "Generative AI"],
-    "nlp engineer": ["Python", "Natural Language Processing", "Machine Learning", "Deep Learning"],
-    "computer vision engineer": ["Python", "Computer Vision", "Deep Learning", "PyTorch"],
-    "deep learning engineer": ["Python", "Deep Learning", "PyTorch", "Neural Networks"],
-    "data engineer": ["Python", "SQL", "ETL", "AWS", "Docker"],
+    "data analyst": DATA_SCIENCE_MAIN,
+    "data scientist": DATA_SCIENTIST_MAIN,
+    "business intelligence analyst": DATA_SCIENCE_MAIN,
+    "data visualization specialist": DATA_SCIENCE_MAIN,
+    "quantitative analyst": DATA_SCIENCE_MAIN,
+    "machine learning engineer": AI_ML_MAIN,
+    "ai engineer": AI_ML_MAIN,
+    "nlp engineer": AI_ML_MAIN,
+    "computer vision engineer": AI_ML_MAIN,
+    "deep learning engineer": AI_ML_MAIN,
 };
 
-const DATA_DOMAIN_DEFAULT = ["Python", "SQL", "Pandas", "Statistics", "Machine Learning", "Excel"];
+function isDataScienceField(careerName = "", domainName = "") {
+    const text = `${careerName} ${domainName}`.toLowerCase();
+    return (
+        text.includes("data science") ||
+        text.includes("analytics") ||
+        text.includes("data analyst") ||
+        text.includes("data scientist") ||
+        text.includes("quantitative") ||
+        text.includes("business intelligence") ||
+        text.includes("visualization specialist")
+    );
+}
 
-const EXTRA = new Set([
-    "java",
-    "c",
-    "c++",
-    "c#",
-    "javascript",
-    "typescript",
-    "php",
-    "html",
-    "css",
-    "react",
-    "angular",
-    "vue.js",
-    "engineering drawing",
-    "cad",
-    "autocad",
-    "solidworks",
-    "quality control",
-    "vs code",
-    "gitlab",
-    "github",
-    "jupyter notebook",
-    "git",
-    "numpy",
-    "matplotlib",
-    "seaborn",
-    "plotly",
-    "mongodb",
-    "oracle database",
-    "oracle",
-    "communication",
-    "problem solving",
-    "teamwork",
-    "leadership",
-]);
+function isAiMlField(careerName = "", domainName = "") {
+    const text = `${careerName} ${domainName}`.toLowerCase();
+    return (
+        text.includes("machine learning") ||
+        text.includes("artificial intelligence") ||
+        text.includes("deep learning") ||
+        text.includes("nlp") ||
+        /\bai\b/.test(text)
+    );
+}
 
 export function normalizeName(value = "") {
     const cleaned = String(value)
         .trim()
         .toLowerCase()
+        .replace(/&amp;/g, "&")
         .replace(/[()]/g, "")
-        .replace(/[\s_\-./]+/g, " ");
+        .replace(/[&+/]/g, " ")
+        .replace(/[\s_\-.]+/g, " ")
+        .trim();
     return ALIASES[cleaned] || cleaned;
 }
 
@@ -100,13 +118,28 @@ function requiredLevel(skill) {
     return Number(skill?.required_level) || 0;
 }
 
+function isCanonicalName(skill, key) {
+    return String(skillLabel(skill)).trim().toLowerCase() === key;
+}
+
 export function dedupeSkills(skills = []) {
     const best = new Map();
     skills.forEach((skill) => {
         const key = normalizeName(skillLabel(skill));
         if (!key) return;
         const previous = best.get(key);
-        if (!previous || requiredLevel(skill) > requiredLevel(previous)) {
+        if (!previous) {
+            best.set(key, skill);
+            return;
+        }
+        const skillIsCanonical = isCanonicalName(skill, key);
+        const previousIsCanonical = isCanonicalName(previous, key);
+        if (skillIsCanonical && !previousIsCanonical) {
+            best.set(key, skill);
+            return;
+        }
+        if (!skillIsCanonical && previousIsCanonical) return;
+        if (requiredLevel(skill) > requiredLevel(previous)) {
             best.set(key, skill);
         }
     });
@@ -114,42 +147,19 @@ export function dedupeSkills(skills = []) {
 }
 
 function namesMatch(skillName, coreName) {
-    const skill = normalizeName(skillName);
-    const core = normalizeName(coreName);
-    if (!skill || !core) return false;
-    if (skill === core) return true;
-    if (core.length <= 3) return skill === core;
-    return skill.includes(core) || core.includes(skill);
+    return normalizeName(skillName) === normalizeName(coreName);
 }
 
 export function coreSkillsFor(careerName = "", domainName = "") {
     const career = normalizeName(careerName);
-    const domain = normalizeName(domainName);
 
     if (CORE_SKILLS_BY_CAREER[career]) return CORE_SKILLS_BY_CAREER[career];
 
-    const hit = Object.keys(CORE_SKILLS_BY_CAREER).find(
-        (key) => career.includes(key) || key.includes(career)
-    );
+    const hit = Object.keys(CORE_SKILLS_BY_CAREER).find((key) => career.includes(key));
     if (hit) return CORE_SKILLS_BY_CAREER[hit];
 
-    if (
-        domain.includes("data science") ||
-        domain.includes("analytics") ||
-        career.includes("data")
-    ) {
-        return DATA_DOMAIN_DEFAULT;
-    }
-
-    if (
-        domain.includes("machine learning") ||
-        domain.includes("artificial intelligence") ||
-        career.includes("machine learning") ||
-        career.includes("ai ")
-    ) {
-        return CORE_SKILLS_BY_CAREER["machine learning engineer"];
-    }
-
+    if (isAiMlField(careerName, domainName)) return AI_ML_MAIN;
+    if (isDataScienceField(careerName, domainName)) return DATA_SCIENCE_MAIN;
     return null;
 }
 
@@ -158,25 +168,22 @@ function pickFromCore(skills, coreNames) {
     const used = new Set();
 
     coreNames.forEach((coreName) => {
-        const match = skills.find((skill) => {
+        const matches = skills.filter((skill) => {
             const id = skill.skill_id ?? skillLabel(skill);
             if (used.has(id)) return false;
             return namesMatch(skillLabel(skill), coreName);
         });
-        if (match) {
-            used.add(match.skill_id ?? skillLabel(match));
-            picked.push(match);
-        }
+        if (matches.length === 0) return;
+        const exact = matches.find(
+            (skill) => normalizeName(skillLabel(skill)) === normalizeName(coreName)
+                && skillLabel(skill).toLowerCase() === coreName.toLowerCase()
+        );
+        const match = exact || matches[0];
+        used.add(match.skill_id ?? skillLabel(match));
+        picked.push(match);
     });
 
     return picked;
-}
-
-function dropExtras(skills) {
-    return skills.filter((skill) => {
-        const key = normalizeName(skillLabel(skill));
-        return key && !EXTRA.has(key);
-    });
 }
 
 export function selectMainSkills(careerName, skills = [], domainName = "") {
@@ -184,11 +191,10 @@ export function selectMainSkills(careerName, skills = [], domainName = "") {
     const core = coreSkillsFor(careerName, domainName);
 
     if (core) {
-        const fromCore = pickFromCore(unique, core);
-        if (fromCore.length > 0) return fromCore.slice(0, MAX_MAIN_SKILLS);
+        return pickFromCore(unique, core).slice(0, MAX_MAIN_SKILLS);
     }
 
-    return dropExtras(unique)
+    return unique
         .sort((a, b) => requiredLevel(b) - requiredLevel(a))
         .slice(0, MAX_MAIN_SKILLS);
 }

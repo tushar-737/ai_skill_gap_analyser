@@ -32,22 +32,37 @@ class MainSkillCatalogTests(unittest.TestCase):
             {"skill_id": 10, "name": "SQL", "required_level": 85},
             {"skill_id": 11, "name": "Excel", "required_level": 70},
             {"skill_id": 12, "name": "Engineering Drawing", "required_level": 90},
+            {"skill_id": 13, "name": "R", "required_level": 80},
+            {"skill_id": 14, "name": "Statistics", "required_level": 88},
+            {"skill_id": 15, "name": "Data Analysis", "required_level": 82},
+            {"skill_id": 16, "name": "Matplotlib", "required_level": 78},
+            {"skill_id": 17, "name": "Supervised Learning", "required_level": 90},
+            {"skill_id": 18, "name": "Scikit-learn", "required_level": 88},
         ]
 
-        selected = select_main_skills("Data Scientist", noisy)
+        selected = select_main_skills("Data Scientist", noisy, "Data Science & Analytics")
         names = [item["name"] for item in selected]
 
-        self.assertIn("Python", names)
-        self.assertIn("Pandas", names)
-        self.assertIn("Machine Learning", names)
+        self.assertEqual(
+            names,
+            [
+                "Python",
+                "R",
+                "SQL",
+                "Statistics",
+                "Pandas",
+                "NumPy",
+                "Data Analysis",
+                "Matplotlib",
+                "Machine Learning",
+                "Scikit-learn",
+            ],
+        )
         self.assertNotIn("Java", names)
-        self.assertNotIn("C++", names)
-        self.assertNotIn("C#", names)
         self.assertNotIn("Excel", names)
-        self.assertNotIn("Engineering Drawing", names)
-        self.assertNotIn("NumPy", names)
-        self.assertLessEqual(len(selected), 6)
+        self.assertNotIn("Supervised Learning", names)
         self.assertEqual(len([n for n in names if n.lower() == "pandas"]), 1)
+        self.assertEqual(len([n for n in names if n.lower() == "numpy"]), 1)
 
     def test_dedupe_keeps_higher_required_level(self):
         unique = dedupe_skills(
