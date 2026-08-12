@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getCareersWithSkillsByDomain } from "../api/api";
-import { dedupeSkills } from "../lib/scoring";
+import { selectMainSkills } from "../lib/mainSkills";
 
 export function useDomainCareerSkills(selectedDomain) {
     const [domainCareerSkills, setDomainCareerSkills] =

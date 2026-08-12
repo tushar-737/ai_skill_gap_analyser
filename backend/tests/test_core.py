@@ -39,16 +39,15 @@ class MainSkillCatalogTests(unittest.TestCase):
 
         self.assertIn("Python", names)
         self.assertIn("Pandas", names)
-        self.assertIn("NumPy", names)
         self.assertIn("Machine Learning", names)
         self.assertNotIn("Java", names)
         self.assertNotIn("C++", names)
         self.assertNotIn("C#", names)
         self.assertNotIn("Excel", names)
         self.assertNotIn("Engineering Drawing", names)
-        self.assertLessEqual(len(selected), 10)
+        self.assertNotIn("NumPy", names)
+        self.assertLessEqual(len(selected), 6)
         self.assertEqual(len([n for n in names if n.lower() == "pandas"]), 1)
-        self.assertEqual(len([n for n in names if n.lower() == "numpy"]), 1)
 
     def test_dedupe_keeps_higher_required_level(self):
         unique = dedupe_skills(

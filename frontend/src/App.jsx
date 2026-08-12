@@ -9,6 +9,7 @@ import { useCareerSkills } from "./hooks/useCareerSkills";
 import { useAiRoadmap } from "./hooks/useAiRoadmap";
 
 import { computeCareerRecommendations, computeResults } from "./lib/scoring";
+import { selectMainSkills } from "./lib/mainSkills";
 import { decodeShareState, encodeShareState, copyText } from "./lib/share";
 import { loadState, saveState } from "./lib/storage";
 
@@ -48,7 +49,13 @@ function App() {
     const { education, domains, loading } = useInitialData(setError);
     const { careers, loading: loadingCareers } = useCareers(selectedDomain, setError);
     const { domainCareerSkills, loading: loadingRecommendations } = useDomainCareerSkills(selectedDomain);
-    const { requiredSkills, loading: loadingSkills } = useCareerSkills(selectedCareer, setError);
+    const { requiredSkills: loadedSkills, loading: loadingSkills } = useCareerSkills(selectedCareer, setError);
+    const selectedDomainName = domains.find((d) => String(d.id) === String(selectedDomain))?.name || "";
+    const selectedCareerName = careers.find((c) => String(c.id) === String(selectedCareer))?.name || "";
+    const requiredSkills = useMemo(
+        () => selectMainSkills(selectedCareerName, loadedSkills, selectedDomainName),
+        [selectedCareerName, loadedSkills, selectedDomainName]
+    );
 
     const pendingLevelsRef = useRef(null);
     const pendingResumeRef = useRef(null);
@@ -275,7 +282,6 @@ function App() {
 
     const results = useMemo(() => computeResults(requiredSkills, skillLevels), [requiredSkills, skillLevels]);
     const careerRecommendations = useMemo(() => computeCareerRecommendations(domainCareerSkills, selectedCareer, skillLevels), [domainCareerSkills, selectedCareer, skillLevels]);
-    const selectedCareerName = careers.find((c) => String(c.id) === String(selectedCareer))?.name;
 
     const { roadmap: aiRoadmap, loading: loadingRoadmap, error: roadmapError } = useAiRoadmap({
         active: showResults && Boolean(results),
@@ -470,7 +476,15 @@ function App() {
                             )}
                         </div>
 
-                        <SkillsRater skills={requiredSkills} levels={skillLevels} loading={loadingSkills} onSkillChange={handleSkillChange} onAnalyze={handleAnalyze} />
+                        <SkillsRater
+                            skills={requiredSkills}
+                            levels={skillLevels}
+                            loading={loadingSkills}
+                            onSkillChange={handleSkillChange}
+                            onAnalyze={handleAnalyze}
+                            careerName={selectedCareerName}
+                            domainName={selectedDomainName}
+                        />
 
                         <div className="journey-actions" style={{ justifyContent: "space-between", marginTop: 12 }}>
                             <button type="button" className="secondary-button" onClick={() => setWizardStep(2)}>

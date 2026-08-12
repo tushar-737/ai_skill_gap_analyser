@@ -12,7 +12,7 @@ import re
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
 
-MAX_MAIN_SKILLS = 10
+MAX_MAIN_SKILLS = 6
 
 # Treat these as the same skill so "Pandas" / "pandas" / "Python Pandas"
 # never appear twice on a slider list.
@@ -99,24 +99,18 @@ CORE_SKILLS_BY_CAREER: Dict[str, Tuple[str, ...]] = {
     "data analyst": (
         "Python",
         "SQL",
-        "Pandas",
         "Excel",
-        "Data Cleaning",
-        "Exploratory Data Analysis",
         "Power BI",
         "Statistics",
+        "Data Cleaning",
     ),
     "data scientist": (
         "Python",
         "SQL",
         "Pandas",
-        "NumPy",
         "Machine Learning",
         "Statistics",
         "Scikit-learn",
-        "Model Evaluation",
-        "Feature Engineering",
-        "Matplotlib",
     ),
     "business intelligence analyst": (
         "SQL",
@@ -221,8 +215,22 @@ def normalize_career_name(name: Optional[str]) -> str:
     return re.sub(r"[\s_\-]+", " ", (name or "").strip().lower())
 
 
-def core_skills_for(career_name: Optional[str]) -> Optional[Tuple[str, ...]]:
-    return CORE_SKILLS_BY_CAREER.get(normalize_career_name(career_name))
+def core_skills_for(
+    career_name: Optional[str],
+    domain_name: Optional[str] = None,
+) -> Optional[Tuple[str, ...]]:
+    career = normalize_career_name(career_name)
+    if career in CORE_SKILLS_BY_CAREER:
+        return CORE_SKILLS_BY_CAREER[career]
+    for key, skills in CORE_SKILLS_BY_CAREER.items():
+        if key in career or (career and career in key):
+            return skills
+    domain = normalize_career_name(domain_name)
+    if "data science" in domain or "analytics" in domain or "data" in career:
+        return CORE_SKILLS_BY_CAREER["data scientist"]
+    if "machine learning" in domain or "artificial intelligence" in domain:
+        return CORE_SKILLS_BY_CAREER["machine learning engineer"]
+    return None
 
 
 def _skill_label(item: dict) -> str:

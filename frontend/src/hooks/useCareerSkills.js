@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { getCareerSkills } from "../api/api";
-import { dedupeSkills } from "../lib/scoring";
 
 export function useCareerSkills(
     selectedCareer,
@@ -43,7 +42,7 @@ export function useCareerSkills(
                     return;
                 }
 
-                setRequiredSkills(dedupeSkills(data));
+                setRequiredSkills(data);
             } catch (error) {
                 console.error(
                     "ERROR LOADING CAREER SKILLS:",

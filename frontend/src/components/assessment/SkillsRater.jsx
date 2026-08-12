@@ -1,5 +1,6 @@
 
 import { useMemo, useState } from "react";
+import { selectMainSkills } from "../../lib/mainSkills";
 
 const CATEGORY_ICON = {
     Programming: "🐍",
@@ -34,7 +35,13 @@ export default function SkillsRater({
     loading = false,
     onSkillChange = () => {},
     onAnalyze = () => {},
+    careerName = "",
+    domainName = "",
 }) {
+    skills = useMemo(
+        () => selectMainSkills(careerName, skills, domainName),
+        [skills, careerName, domainName]
+    );
     const [search, setSearch] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("All");
     const [statusFilter, setStatusFilter] = useState("All");
@@ -141,11 +148,11 @@ export default function SkillsRater({
                         Step 4 — Your Skills
                     </span>
 
-                    <h2>How strong are your skills?</h2>
+                    <h2>Rate the main skills only</h2>
 
                     <p>
-                        Rate each skill honestly. Use “Not familiar” if
-                        you’ve never used it — that’s okay.
+                        Only the core skills for this role are listed.
+                        Repeated libraries and extra languages are hidden.
                     </p>
                 </div>
 
