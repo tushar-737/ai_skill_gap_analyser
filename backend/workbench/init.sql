@@ -902,6 +902,7 @@ INSERT IGNORE INTO `skills_v2` (`name`, `category`, `description`) VALUES
 ('Supply Chain Basics', 'E-commerce', 'Core skill for e-commerce operations roles'),
 ('Surveying', 'Civil Engineering', 'Core skill for civil & construction roles'),
 ('Sustainable Design', 'Architecture', 'Core skill for architecture & interior design roles'),
+('Teamwork & Collaboration', 'Soft Skills', 'Working effectively in teams'),
 ('Test Automation', 'Quality Assurance', 'Core skill for qa & software testing roles'),
 ('Test Case Design', 'Quality Assurance', 'Core skill for qa & software testing roles'),
 ('Texturing & Lighting', 'Animation & VFX', 'Core skill for animation & vfx roles'),
@@ -1529,6 +1530,174 @@ FROM (
     UNION ALL SELECT 'Catalog Quality Specialist' AS career_name, 'Excel' AS skill_name, 75 AS required_level
     UNION ALL SELECT 'Catalog Quality Specialist' AS career_name, 'Problem Solving' AS skill_name, 60 AS required_level
     UNION ALL SELECT 'Catalog Quality Specialist' AS career_name, 'SEO Writing' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Data Engineer' AS career_name, 'Apache Kafka' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Data Engineer' AS career_name, 'Communication' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Analytics Engineer' AS career_name, 'Data Visualization' AS skill_name, 80 AS required_level
+    UNION ALL SELECT 'Analytics Engineer' AS career_name, 'Communication' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Big Data Engineer' AS career_name, 'ETL Design' AS skill_name, 75 AS required_level
+    UNION ALL SELECT 'Big Data Engineer' AS career_name, 'Linux Administration' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Game Developer' AS career_name, 'Problem Solving' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Game Developer' AS career_name, 'Teamwork & Collaboration' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Unity Developer' AS career_name, 'Game Design Fundamentals' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Unity Developer' AS career_name, 'Problem Solving' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Level Designer' AS career_name, 'Game Physics' AS skill_name, 50 AS required_level
+    UNION ALL SELECT 'Level Designer' AS career_name, 'Communication' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Blockchain Developer' AS career_name, 'Node.js' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Blockchain Developer' AS career_name, 'Teamwork & Collaboration' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Smart Contract Auditor' AS career_name, 'OWASP Top 10' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Smart Contract Auditor' AS career_name, 'Incident Response' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Web3 Frontend Developer' AS career_name, 'Git & GitHub' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Web3 Frontend Developer' AS career_name, 'REST API Design' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Embedded Systems Engineer' AS career_name, 'Sensor Integration' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Embedded Systems Engineer' AS career_name, 'Problem Solving' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'IoT Developer' AS career_name, 'Networking Fundamentals' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'IoT Developer' AS career_name, 'Communication' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Firmware Engineer' AS career_name, 'Problem Solving' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Firmware Engineer' AS career_name, 'Report Writing' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Robotics Engineer' AS career_name, 'C Programming' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Robotics Engineer' AS career_name, 'Teamwork & Collaboration' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Automation Engineer' AS career_name, 'Ladder Logic' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Automation Engineer' AS career_name, 'Instrumentation' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Mechatronics Engineer' AS career_name, 'PLC Programming' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Mechatronics Engineer' AS career_name, 'Problem Solving' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Civil Engineer' AS career_name, 'Revit' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Civil Engineer' AS career_name, 'Report Writing' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Structural Engineer' AS career_name, 'Concrete Technology' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Structural Engineer' AS career_name, 'Problem Solving' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Quantity Surveyor' AS career_name, 'Negotiation' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Quantity Surveyor' AS career_name, 'Communication' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Electrical Design Engineer' AS career_name, 'Instrumentation' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Electrical Design Engineer' AS career_name, 'Report Writing' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Power Systems Engineer' AS career_name, 'Report Writing' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Power Systems Engineer' AS career_name, 'Teamwork & Collaboration' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'PLC Automation Engineer' AS career_name, 'Control Systems' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'PLC Automation Engineer' AS career_name, 'Problem Solving' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Production Engineer' AS career_name, 'Excel' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Production Engineer' AS career_name, 'Communication' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'CNC Programmer' AS career_name, 'Lean Manufacturing' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'CNC Programmer' AS career_name, 'Problem Solving' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Industrial Engineer' AS career_name, 'Communication' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Industrial Engineer' AS career_name, 'Report Writing' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Automotive Design Engineer' AS career_name, 'MATLAB' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Automotive Design Engineer' AS career_name, 'Report Writing' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'EV Design Engineer' AS career_name, 'CAN Bus' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'EV Design Engineer' AS career_name, 'Problem Solving' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Vehicle Testing Engineer' AS career_name, 'Report Writing' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Vehicle Testing Engineer' AS career_name, 'Excel' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Process Engineer' AS career_name, 'Safety Procedures' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Process Engineer' AS career_name, 'Communication' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Plant Operations Engineer' AS career_name, 'Teamwork & Collaboration' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Plant Operations Engineer' AS career_name, 'Excel' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'R&D Chemist' AS career_name, 'Regulatory Compliance' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'R&D Chemist' AS career_name, 'Communication' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Biotech Research Associate' AS career_name, 'GCP Guidelines' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Biotech Research Associate' AS career_name, 'Communication' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Clinical Research Associate' AS career_name, 'Excel' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Clinical Research Associate' AS career_name, 'Report Writing' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Bioinformatics Analyst' AS career_name, 'SQL' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Bioinformatics Analyst' AS career_name, 'Machine Learning' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Staff Nurse' AS career_name, 'Teamwork & Collaboration' AS skill_name, 75 AS required_level
+    UNION ALL SELECT 'Staff Nurse' AS career_name, 'Time Management' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'ICU Nurse' AS career_name, 'Teamwork & Collaboration' AS skill_name, 75 AS required_level
+    UNION ALL SELECT 'ICU Nurse' AS career_name, 'Medical Documentation' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Community Health Officer' AS career_name, 'Report Writing' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Community Health Officer' AS career_name, 'Time Management' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'School Teacher' AS career_name, 'Time Management' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'School Teacher' AS career_name, 'Teamwork & Collaboration' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Assistant Professor' AS career_name, 'Communication' AS skill_name, 75 AS required_level
+    UNION ALL SELECT 'Assistant Professor' AS career_name, 'Time Management' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Instructional Designer' AS career_name, 'Figma' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Instructional Designer' AS career_name, 'Communication' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Corporate Lawyer' AS career_name, 'Communication' AS skill_name, 80 AS required_level
+    UNION ALL SELECT 'Corporate Lawyer' AS career_name, 'Time Management' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Litigation Advocate' AS career_name, 'Time Management' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Litigation Advocate' AS career_name, 'Report Writing' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Legal Analyst' AS career_name, 'Time Management' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Legal Analyst' AS career_name, 'Report Writing' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'HR Executive' AS career_name, 'Time Management' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'HR Executive' AS career_name, 'Teamwork & Collaboration' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Talent Acquisition Specialist' AS career_name, 'Communication' AS skill_name, 80 AS required_level
+    UNION ALL SELECT 'Talent Acquisition Specialist' AS career_name, 'Time Management' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'HR Business Partner' AS career_name, 'Communication' AS skill_name, 75 AS required_level
+    UNION ALL SELECT 'HR Business Partner' AS career_name, 'Negotiation' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Sales Executive' AS career_name, 'Time Management' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Sales Executive' AS career_name, 'Teamwork & Collaboration' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Business Development Manager' AS career_name, 'Communication' AS skill_name, 80 AS required_level
+    UNION ALL SELECT 'Business Development Manager' AS career_name, 'Time Management' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Account Manager' AS career_name, 'Time Management' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Account Manager' AS career_name, 'Report Writing' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Bank Probationary Officer' AS career_name, 'Communication' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Bank Probationary Officer' AS career_name, 'Time Management' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Credit Analyst' AS career_name, 'Communication' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Credit Analyst' AS career_name, 'Report Writing' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Insurance Underwriter' AS career_name, 'Excel' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Insurance Underwriter' AS career_name, 'Communication' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Supply Chain Analyst' AS career_name, 'Communication' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Supply Chain Analyst' AS career_name, 'Report Writing' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Logistics Coordinator' AS career_name, 'Time Management' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Logistics Coordinator' AS career_name, 'Problem Solving' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Procurement Specialist' AS career_name, 'Communication' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Procurement Specialist' AS career_name, 'Market Research' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Front Office Executive' AS career_name, 'Time Management' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Front Office Executive' AS career_name, 'Teamwork & Collaboration' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Chef' AS career_name, 'Teamwork & Collaboration' AS skill_name, 75 AS required_level
+    UNION ALL SELECT 'Chef' AS career_name, 'Problem Solving' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Travel Consultant' AS career_name, 'Problem Solving' AS skill_name, 65 AS required_level
+) t
+JOIN `careers_v2` c ON c.name = t.career_name
+JOIN `skills_v2` s ON s.name = t.skill_name;
+INSERT IGNORE INTO `career_skill_requirements` (`career_id`, `skill_id`, `required_level`)
+SELECT c.id, s.id, t.required_level
+FROM (
+    SELECT 'Travel Consultant' AS career_name, 'Time Management' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'VFX Artist' AS career_name, 'Maya' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'VFX Artist' AS career_name, 'Teamwork & Collaboration' AS skill_name, 55 AS required_level
+    UNION ALL SELECT '3D Animator' AS career_name, 'Motion Graphics' AS skill_name, 60 AS required_level
+    UNION ALL SELECT '3D Animator' AS career_name, 'Time Management' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Motion Graphics Designer' AS career_name, 'Adobe Illustrator' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Motion Graphics Designer' AS career_name, 'Time Management' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Graphic Designer' AS career_name, 'InDesign' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Graphic Designer' AS career_name, 'Time Management' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Brand Designer' AS career_name, 'Communication' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Brand Designer' AS career_name, 'Color Theory' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Print & Layout Designer' AS career_name, 'Adobe Illustrator' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Print & Layout Designer' AS career_name, 'Time Management' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Architect' AS career_name, 'Communication' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Architect' AS career_name, 'Time Management' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Interior Designer' AS career_name, 'Communication' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Interior Designer' AS career_name, 'Time Management' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Urban Planner' AS career_name, 'Communication' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Urban Planner' AS career_name, 'Data Visualization' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Agronomist' AS career_name, 'Report Writing' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Agronomist' AS career_name, 'Communication' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Agri Business Manager' AS career_name, 'Negotiation' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Agri Business Manager' AS career_name, 'Report Writing' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Soil Scientist' AS career_name, 'Research Methods' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Soil Scientist' AS career_name, 'Communication' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Counselling Psychologist' AS career_name, 'Ethics in Psychology' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Counselling Psychologist' AS career_name, 'Time Management' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Clinical Psychologist' AS career_name, 'Communication' AS skill_name, 75 AS required_level
+    UNION ALL SELECT 'Clinical Psychologist' AS career_name, 'Case Documentation' AS skill_name, 75 AS required_level
+    UNION ALL SELECT 'HR Psychologist' AS career_name, 'Interviewing' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'HR Psychologist' AS career_name, 'Report Writing' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Civil Services Officer (UPSC)' AS career_name, 'Logical Reasoning' AS skill_name, 75 AS required_level
+    UNION ALL SELECT 'Civil Services Officer (UPSC)' AS career_name, 'Time Management' AS skill_name, 75 AS required_level
+    UNION ALL SELECT 'Public Policy Analyst' AS career_name, 'Communication' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Public Policy Analyst' AS career_name, 'Excel' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Government Officer (SSC/Banking)' AS career_name, 'Current Affairs' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Government Officer (SSC/Banking)' AS career_name, 'Communication' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'QA Analyst' AS career_name, 'Communication' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'QA Analyst' AS career_name, 'API Testing' AS skill_name, 50 AS required_level
+    UNION ALL SELECT 'Automation Test Engineer' AS career_name, 'SDLC & STLC' AS skill_name, 65 AS required_level
+    UNION ALL SELECT 'Automation Test Engineer' AS career_name, 'Python' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Performance Test Engineer' AS career_name, 'Report Writing' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Performance Test Engineer' AS career_name, 'Communication' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'E-commerce Manager' AS career_name, 'Excel' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'E-commerce Manager' AS career_name, 'Communication' AS skill_name, 70 AS required_level
+    UNION ALL SELECT 'Marketplace Specialist' AS career_name, 'Meta Ads' AS skill_name, 55 AS required_level
+    UNION ALL SELECT 'Marketplace Specialist' AS career_name, 'Time Management' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Catalog Quality Specialist' AS career_name, 'Communication' AS skill_name, 60 AS required_level
+    UNION ALL SELECT 'Catalog Quality Specialist' AS career_name, 'Time Management' AS skill_name, 65 AS required_level
 ) t
 JOIN `careers_v2` c ON c.name = t.career_name
 JOIN `skills_v2` s ON s.name = t.skill_name;
@@ -1537,7 +1706,7 @@ JOIN `skills_v2` s ON s.name = t.skill_name;
 -- =====================================================
 -- 9) VERIFY — expected after a fresh run (approx. minimums):
 --    education_categories 10+, education_programs 79+, domains 37+,
---    careers_v2 114+, skills_v2 340+, career_skill_requirements 680+
+--    careers_v2 114+, skills_v2 340+, career_skill_requirements 850+
 -- =====================================================
 SELECT 'education_categories'     AS tbl, COUNT(*) AS rows_count FROM `education_categories`
 UNION ALL SELECT 'education_programs',     COUNT(*) FROM `education_programs`

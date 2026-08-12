@@ -493,6 +493,95 @@ CAREERS = [
 ]
 
 # =====================================================================
+# 5) EXTRA REQUIREMENTS — enrich every new career to ~8 mapped skills
+#    (career, skill, required_level); merged into the requirement set
+# =====================================================================
+
+EXTRA_REQUIREMENTS = [
+    ("Data Engineer", "Apache Kafka", 70), ("Data Engineer", "Communication", 60),
+    ("Analytics Engineer", "Data Visualization", 80), ("Analytics Engineer", "Communication", 65),
+    ("Big Data Engineer", "ETL Design", 75), ("Big Data Engineer", "Linux Administration", 65),
+    ("Game Developer", "Problem Solving", 70), ("Game Developer", "Teamwork & Collaboration", 60),
+    ("Unity Developer", "Game Design Fundamentals", 65), ("Unity Developer", "Problem Solving", 65),
+    ("Level Designer", "Game Physics", 50), ("Level Designer", "Communication", 60),
+    ("Blockchain Developer", "Node.js", 60), ("Blockchain Developer", "Teamwork & Collaboration", 55),
+    ("Smart Contract Auditor", "OWASP Top 10", 60), ("Smart Contract Auditor", "Incident Response", 55),
+    ("Web3 Frontend Developer", "Git & GitHub", 65), ("Web3 Frontend Developer", "REST API Design", 60),
+    ("Embedded Systems Engineer", "Sensor Integration", 65), ("Embedded Systems Engineer", "Problem Solving", 65),
+    ("IoT Developer", "Networking Fundamentals", 60), ("IoT Developer", "Communication", 55),
+    ("Firmware Engineer", "Problem Solving", 70), ("Firmware Engineer", "Report Writing", 55),
+    ("Robotics Engineer", "C Programming", 65), ("Robotics Engineer", "Teamwork & Collaboration", 55),
+    ("Automation Engineer", "Ladder Logic", 70), ("Automation Engineer", "Instrumentation", 65),
+    ("Mechatronics Engineer", "PLC Programming", 60), ("Mechatronics Engineer", "Problem Solving", 65),
+    ("Civil Engineer", "Revit", 60), ("Civil Engineer", "Report Writing", 55),
+    ("Structural Engineer", "Concrete Technology", 65), ("Structural Engineer", "Problem Solving", 60),
+    ("Quantity Surveyor", "Negotiation", 55), ("Quantity Surveyor", "Communication", 60),
+    ("Electrical Design Engineer", "Instrumentation", 60), ("Electrical Design Engineer", "Report Writing", 55),
+    ("Power Systems Engineer", "Report Writing", 60), ("Power Systems Engineer", "Teamwork & Collaboration", 55),
+    ("PLC Automation Engineer", "Control Systems", 70), ("PLC Automation Engineer", "Problem Solving", 65),
+    ("Production Engineer", "Excel", 70), ("Production Engineer", "Communication", 60),
+    ("CNC Programmer", "Lean Manufacturing", 55), ("CNC Programmer", "Problem Solving", 60),
+    ("Industrial Engineer", "Communication", 65), ("Industrial Engineer", "Report Writing", 55),
+    ("Automotive Design Engineer", "MATLAB", 60), ("Automotive Design Engineer", "Report Writing", 55),
+    ("EV Design Engineer", "CAN Bus", 65), ("EV Design Engineer", "Problem Solving", 65),
+    ("Vehicle Testing Engineer", "Report Writing", 65), ("Vehicle Testing Engineer", "Excel", 60),
+    ("Process Engineer", "Safety Procedures", 70), ("Process Engineer", "Communication", 60),
+    ("Plant Operations Engineer", "Teamwork & Collaboration", 65), ("Plant Operations Engineer", "Excel", 60),
+    ("R&D Chemist", "Regulatory Compliance", 60), ("R&D Chemist", "Communication", 55),
+    ("Biotech Research Associate", "GCP Guidelines", 55), ("Biotech Research Associate", "Communication", 60),
+    ("Clinical Research Associate", "Excel", 65), ("Clinical Research Associate", "Report Writing", 70),
+    ("Bioinformatics Analyst", "SQL", 70), ("Bioinformatics Analyst", "Machine Learning", 55),
+    ("Staff Nurse", "Teamwork & Collaboration", 75), ("Staff Nurse", "Time Management", 70),
+    ("ICU Nurse", "Teamwork & Collaboration", 75), ("ICU Nurse", "Medical Documentation", 70),
+    ("Community Health Officer", "Report Writing", 55), ("Community Health Officer", "Time Management", 60),
+    ("School Teacher", "Time Management", 70), ("School Teacher", "Teamwork & Collaboration", 65),
+    ("Assistant Professor", "Communication", 75), ("Assistant Professor", "Time Management", 60),
+    ("Instructional Designer", "Figma", 55), ("Instructional Designer", "Communication", 70),
+    ("Corporate Lawyer", "Communication", 80), ("Corporate Lawyer", "Time Management", 65),
+    ("Litigation Advocate", "Time Management", 70), ("Litigation Advocate", "Report Writing", 70),
+    ("Legal Analyst", "Time Management", 65), ("Legal Analyst", "Report Writing", 70),
+    ("HR Executive", "Time Management", 70), ("HR Executive", "Teamwork & Collaboration", 65),
+    ("Talent Acquisition Specialist", "Communication", 80), ("Talent Acquisition Specialist", "Time Management", 60),
+    ("HR Business Partner", "Communication", 75), ("HR Business Partner", "Negotiation", 70),
+    ("Sales Executive", "Time Management", 70), ("Sales Executive", "Teamwork & Collaboration", 60),
+    ("Business Development Manager", "Communication", 80), ("Business Development Manager", "Time Management", 65),
+    ("Account Manager", "Time Management", 65), ("Account Manager", "Report Writing", 55),
+    ("Bank Probationary Officer", "Communication", 70), ("Bank Probationary Officer", "Time Management", 65),
+    ("Credit Analyst", "Communication", 60), ("Credit Analyst", "Report Writing", 60),
+    ("Insurance Underwriter", "Excel", 70), ("Insurance Underwriter", "Communication", 60),
+    ("Supply Chain Analyst", "Communication", 65), ("Supply Chain Analyst", "Report Writing", 55),
+    ("Logistics Coordinator", "Time Management", 70), ("Logistics Coordinator", "Problem Solving", 65),
+    ("Procurement Specialist", "Communication", 70), ("Procurement Specialist", "Market Research", 60),
+    ("Front Office Executive", "Time Management", 65), ("Front Office Executive", "Teamwork & Collaboration", 70),
+    ("Chef", "Teamwork & Collaboration", 75), ("Chef", "Problem Solving", 55),
+    ("Travel Consultant", "Problem Solving", 65), ("Travel Consultant", "Time Management", 60),
+    ("VFX Artist", "Maya", 60), ("VFX Artist", "Teamwork & Collaboration", 55),
+    ("3D Animator", "Motion Graphics", 60), ("3D Animator", "Time Management", 55),
+    ("Motion Graphics Designer", "Adobe Illustrator", 60), ("Motion Graphics Designer", "Time Management", 55),
+    ("Graphic Designer", "InDesign", 60), ("Graphic Designer", "Time Management", 60),
+    ("Brand Designer", "Communication", 65), ("Brand Designer", "Color Theory", 70),
+    ("Print & Layout Designer", "Adobe Illustrator", 65), ("Print & Layout Designer", "Time Management", 55),
+    ("Architect", "Communication", 65), ("Architect", "Time Management", 60),
+    ("Interior Designer", "Communication", 70), ("Interior Designer", "Time Management", 60),
+    ("Urban Planner", "Communication", 65), ("Urban Planner", "Data Visualization", 55),
+    ("Agronomist", "Report Writing", 60), ("Agronomist", "Communication", 60),
+    ("Agri Business Manager", "Negotiation", 65), ("Agri Business Manager", "Report Writing", 60),
+    ("Soil Scientist", "Research Methods", 65), ("Soil Scientist", "Communication", 55),
+    ("Counselling Psychologist", "Ethics in Psychology", 70), ("Counselling Psychologist", "Time Management", 55),
+    ("Clinical Psychologist", "Communication", 75), ("Clinical Psychologist", "Case Documentation", 75),
+    ("HR Psychologist", "Interviewing", 60), ("HR Psychologist", "Report Writing", 60),
+    ("Civil Services Officer (UPSC)", "Logical Reasoning", 75), ("Civil Services Officer (UPSC)", "Time Management", 75),
+    ("Public Policy Analyst", "Communication", 70), ("Public Policy Analyst", "Excel", 55),
+    ("Government Officer (SSC/Banking)", "Current Affairs", 70), ("Government Officer (SSC/Banking)", "Communication", 60),
+    ("QA Analyst", "Communication", 70), ("QA Analyst", "API Testing", 50),
+    ("Automation Test Engineer", "SDLC & STLC", 65), ("Automation Test Engineer", "Python", 60),
+    ("Performance Test Engineer", "Report Writing", 60), ("Performance Test Engineer", "Communication", 55),
+    ("E-commerce Manager", "Excel", 70), ("E-commerce Manager", "Communication", 70),
+    ("Marketplace Specialist", "Meta Ads", 55), ("Marketplace Specialist", "Time Management", 60),
+    ("Catalog Quality Specialist", "Communication", 60), ("Catalog Quality Specialist", "Time Management", 65),
+]
+
+# =====================================================================
 # GENERATION LOGIC
 # =====================================================================
 
@@ -602,11 +691,39 @@ def main() -> None:
 
     # requirements: skip pairs already seeded
     new_reqs = []
+    seen_pairs = set()
     for domain, career, desc, avg, skills in CAREERS:
         for skill, level in skills:
+            seen_pairs.add((career, skill))
             if (career, skill) in ex_reqs:
                 continue
             new_reqs.append((career, skill, int(level)))
+
+    # merge EXTRA_REQUIREMENTS (review fix #2: ~8 mapped skills/career)
+    new_career_set = {career for _d, career, *_rest in CAREERS}
+    extra_merged = 0
+    for career, skill, level in EXTRA_REQUIREMENTS:
+        if career not in new_career_set:
+            errors.append(f"extra requirement for unknown career: {career}")
+            continue
+        if not (1 <= int(level) <= 100):
+            errors.append(f"bad extra level {level} for {career}/{skill}")
+            continue
+        if (career, skill) in seen_pairs or (career, skill) in ex_reqs:
+            continue  # already mapped
+        seen_pairs.add((career, skill))
+        new_reqs.append((career, skill, int(level)))
+        extra_merged += 1
+        # brand-new skill? register it under the career's domain category
+        if skill not in ex_skills and skill not in new_skills:
+            info = SKILL_INFO.get(skill)
+            if info is None:
+                domain = next(d for d, c, *_r in CAREERS if c == career)
+                info = (
+                    DOMAIN_SKILL_CATEGORY[domain],
+                    f"Core skill for {domain.lower()} roles",
+                )
+            new_skills[skill] = info
 
     if errors:
         print("VALIDATION FAILED:")
@@ -720,7 +837,7 @@ def main() -> None:
         r"--\s*9\) VERIFY[^\n]*\n--[^\n]*\n--[^\n]*\n",
         "-- 9) VERIFY — expected after a fresh run (approx. minimums):\n"
         "--    education_categories 10+, education_programs 79+, domains 37+,\n"
-        "--    careers_v2 114+, skills_v2 340+, career_skill_requirements 680+\n",
+        "--    careers_v2 114+, skills_v2 340+, career_skill_requirements 850+\n",
         sql_new,
         count=1,
     )
@@ -734,7 +851,7 @@ def main() -> None:
     print(f"  new domains    : {len(new_domains)}")
     print(f"  new careers    : {len(CAREERS)}")
     print(f"  new skills     : {len(new_skills)}")
-    print(f"  new requirements: {len(new_reqs)}")
+    print(f"  new requirements: {len(new_reqs)} (incl. {extra_merged} extra enrichments)")
     if auto_registered:
         print(f"  auto-registered skills ({len(auto_registered)}):")
         for s in sorted(auto_registered):

@@ -61,11 +61,11 @@ export default function ResumeUploader({ selectedCareer = "", selectedEducation 
                     📄
                 </div>
                 <div>
-                    <span className="journey-kicker">Step 4 — Resume (Optional)</span>
+                    <span className="journey-kicker">Step 4 of 5 — Resume (Optional)</span>
                     <h2>Have a resume?</h2>
                     <p>Upload it and we&apos;ll use your existing skills to help build your profile. You can still edit the sliders after.</p>
                 </div>
-                <span className="journey-step-badge">4a</span>
+                <span className="journey-step-badge">4</span>
             </div>
 
             {!file && !result && (

@@ -505,29 +505,17 @@ function App() {
 
                 {wizardStep === 3 && (
                     <>
-                        <div className="journey-card" style={{ padding: "18px 20px" }}>
-                            <div className="journey-header">
-                                <div className="journey-icon" aria-hidden>
-                                    📄
-                                </div>
-                                <div>
-                                    <span className="journey-kicker">Step 4 of 5 — Resume (Optional)</span>
-                                    <h2>Have a resume?</h2>
-                                    <p>Upload it and we&apos;ll use your existing skills to help build your profile. Or skip and rate manually.</p>
-                                </div>
-                                <span className="journey-step-badge">4</span>
-                            </div>
-                            <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-                                <button type="button" className="secondary-button" onClick={() => setWizardStep(2)}>
-                                    ← Back
-                                </button>
-                                <button type="button" className="secondary-button" onClick={() => document.querySelector(".skills-rater")?.scrollIntoView({ behavior: "smooth" })}>
-                                    Skip for now
-                                </button>
-                            </div>
+                        <ResumeUploader selectedCareer={selectedCareer} selectedEducation={selectedEducation} onExtracted={handleResumeExtracted} />
+
+                        <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+                            <button type="button" className="secondary-button" onClick={() => setWizardStep(2)}>
+                                ← Back to Career
+                            </button>
+                            <button type="button" className="secondary-button" onClick={() => document.querySelector(".skills-rater")?.scrollIntoView({ behavior: "smooth" })}>
+                                Skip resume — rate my skills ↓
+                            </button>
                         </div>
 
-                        <ResumeUploader selectedCareer={selectedCareer} selectedEducation={selectedEducation} onExtracted={handleResumeExtracted} />
                         <ResumeHistory onReload={handleHistoryReload} refreshKey={historyRefresh} />
 
                         {/* P1: careers the resume pipeline recommends */}
@@ -568,31 +556,6 @@ function App() {
 
                 {wizardStep >= 3 && selectedCareer && (
                     <>
-                        <div className="skill-intro">
-                            <h3>📊 Rate your current skills</h3>
-                            <p>
-                                Move each slider to the level you think best represents your current ability. <strong>0% = Beginner · 50% = Intermediate · 100% = Advanced</strong>. Your score will be
-                                compared with the level required for your target career.
-                            </p>
-                            <div className="skill-scale">
-                                <span>0 Beginner</span>
-                                <span>25</span>
-                                <span>50 Intermediate</span>
-                                <span>75</span>
-                                <span>100 Advanced</span>
-                            </div>
-                            {requiredSkills.length > 0 && (
-                                <div className="skill-progress">
-                                    <span>
-                                        Skills rated: {Object.keys(skillLevels).filter((k) => skillLevels[k] > 0).length} / {requiredSkills.length}
-                                    </span>
-                                    <div className="skill-progress-track">
-                                        <div className="skill-progress-fill" style={{ width: `${Math.round((Object.keys(skillLevels).filter((k) => skillLevels[k] > 0).length / Math.max(1, requiredSkills.length)) * 100)}%` }} />
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
                         <SkillsRater skills={requiredSkills} levels={skillLevels} loading={loadingSkills} onSkillChange={handleSkillChange} onAnalyze={handleAnalyze} />
 
                         <div className="journey-actions" style={{ justifyContent: "space-between", marginTop: 12 }}>
