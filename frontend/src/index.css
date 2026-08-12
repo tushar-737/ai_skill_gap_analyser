@@ -12,7 +12,7 @@ html {
 
 body {
     font-family: "Inter", Arial, sans-serif;
-    background: #f8fafc;
+    background: #faf6f1;
     color: #0f172a;
     line-height: 1.6;
 }
@@ -29,7 +29,7 @@ button {
 
 /* Keep keyboard navigation visible without affecting mouse interactions. */
 :focus-visible {
-    outline: 3px solid #2563eb;
+    outline: 3px solid #ea580c;
     outline-offset: 3px;
 }
 

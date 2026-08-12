@@ -22,7 +22,7 @@ export default function AiRecommendation({ matchScore, roadmap, loading, error, 
     return (
         <div className="recommendation-card roadmap-v2">
             <div className="roadmap-header">
-                <span className="eyebrow" style={{ color: "#7c3aed" }}>
+                <span className="eyebrow" style={{ color: "#e11d48" }}>
                     🤖 AI ANALYSIS
                 </span>
                 <h3>Your Recommended Learning Roadmap</h3>

@@ -32,8 +32,10 @@ describe("computeResults", () => {
     it("computes match score, gaps and strong skills", () => {
         const result = computeResults(skills, { 1: 80, 2: 30 });
 
-        // (80 + 30) / (80 + 60) = 110/140 ≈ 78.57 → 79
-        expect(result.matchScore).toBe(79);
+        // Weighted engine: coverage = (80*80 + 30*60) / (80²+60²) = 0.82
+        // strengths = 1/2 skills met = 0.5
+        // final = (0.7*0.82 + 0.1*0.5) / 0.8 = 0.78 → 78
+        expect(result.matchScore).toBe(78);
         expect(result.readiness).toBe("Career Ready");
 
         expect(result.strongSkills).toHaveLength(1);
@@ -75,11 +77,48 @@ describe("computeResults", () => {
 
     it("readiness tiers are applied correctly", () => {
         const allMax = { 1: 80, 2: 60 };
-        const mid = { 1: 50, 2: 40 }; // 90/140 = 64.3 → Career Ready
+        const mid = { 1: 60, 2: 50 }; // coverage 0.78 → final ≈ 68 → Career Ready
 
         expect(computeResults(skills, allMax).readiness).toBe("Highly Ready");
         expect(computeResults(skills, mid).readiness).toBe("Career Ready");
-        expect(computeResults(skills, { 1: 40, 2: 20 }).readiness).toBe("Developing");
+        expect(computeResults(skills, { 1: 50, 2: 35 }).readiness).toBe("Developing");
+        expect(computeResults(skills, { 1: 20, 2: 10 }).readiness).toBe("Beginner");
+    });
+
+    it("exposes a score breakdown matching the weighted formula", () => {
+        const result = computeResults(skills, { 1: 80, 2: 30 });
+
+        expect(result.scoreBreakdown.skillCoverage).toBe(82);
+        expect(result.scoreBreakdown.strengths).toBe(50);
+        // education / resume signals not provided → dropped
+        expect(result.scoreBreakdown.education).toBeNull();
+        expect(result.scoreBreakdown.resumeEvidence).toBeNull();
+    });
+
+    it("education compatibility raises the score for a matching domain", () => {
+        const base = computeResults(skills, { 1: 80, 2: 30 });
+        const boosted = computeResults(skills, { 1: 80, 2: 30 }, {
+            education: "B.Tech Computer Science",
+            domainName: "Software Development",
+        });
+
+        expect(boosted.matchScore).toBeGreaterThan(base.matchScore);
+        expect(boosted.scoreBreakdown.education).toBe(100);
+    });
+
+    it("learning order puts the career's most-demanded gaps first", () => {
+        const rows = [
+            { ...skills[0], required_level: 50 },
+            { ...skills[1], required_level: 90 },
+            { skill_id: 3, skill: "Git", category: "Tools", required_level: 40 },
+        ];
+        const result = computeResults(rows, { 1: 10, 2: 10, 3: 10 });
+
+        expect(result.learningOrder.map((s) => s.required_level)).toEqual([90, 50, 40]);
+        expect(result.learningOrder[0].step).toBe(1);
+        expect(result.learningOrder[0].skill).toBe("SQL");
+        // SQL gap = 80 → Critical; Python gap = 40 → High; Git gap = 30 → Medium
+        expect(result.criticalGaps.map((s) => s.skill)).toEqual(["SQL", "Python"]);
     });
 });
 

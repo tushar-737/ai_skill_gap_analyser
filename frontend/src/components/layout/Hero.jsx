@@ -1,4 +1,4 @@
-export default function Hero() {
+export default function Hero({ onTryDemo }) {
     function scrollToAssessment() {
         document.getElementById("assessment")?.scrollIntoView({ behavior: "smooth" });
     }
@@ -20,6 +20,12 @@ export default function Hero() {
                 <button type="button" className="hero-cta" onClick={scrollToAssessment}>
                     Start Skill Analysis <span aria-hidden>→</span>
                 </button>
+
+                {onTryDemo && (
+                    <button type="button" className="hero-demo" onClick={onTryDemo}>
+                        🎯 Try Demo Assessment
+                    </button>
+                )}
 
                 <div className="hero-pills" aria-label="Steps">
                     <span>Education</span>

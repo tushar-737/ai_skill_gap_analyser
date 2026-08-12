@@ -2,7 +2,7 @@ export default function Architecture() {
     return (
         <section id="about" className="arch-section">
             <div className="arch-inner">
-                <span className="eyebrow" style={{ background: "#2563eb", color: "white" }}>
+                <span className="eyebrow" style={{ background: "#ea580c", color: "white" }}>
                     AI ARCHITECTURE
                 </span>
                 <h2>How the intelligence flows</h2>

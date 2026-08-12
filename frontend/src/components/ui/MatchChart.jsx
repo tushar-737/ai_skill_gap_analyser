@@ -31,7 +31,7 @@ export default function MatchChart({
             <defs>
                 <linearGradient id={gradientId} x1="0%" x2="100%">
                     <stop offset="0%" stopColor="#4f46e5" />
-                    <stop offset="100%" stopColor="#06b6d4" />
+                    <stop offset="100%" stopColor="#f59e0b" />
                 </linearGradient>
             </defs>
 
