@@ -12,19 +12,43 @@
 const STORAGE_KEY = "skillgap:state:v1";
 const RESUME_SESSION_KEY = "skillgap:resume-session:v1";
 
-// An opaque identifier isolates one browser's upload history. It is not
-// authentication; a production multi-user app still needs real accounts.
+// Generate a unique browser session ID.
+// Uses crypto.randomUUID when available, otherwise a fallback.
+function generateUUID() {
+    if (
+        typeof crypto !== "undefined" &&
+        typeof crypto.randomUUID === "function"
+    ) {
+        return crypto.randomUUID();
+    }
+
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+        /[xy]/g,
+        function (c) {
+            const r = (Math.random() * 16) | 0;
+            const v = c === "x" ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+        }
+    );
+}
+
+// An opaque identifier isolates one browser's upload history.
+// It is not authentication; a production multi-user app still needs real accounts.
 export function getResumeSession() {
     try {
         let token = localStorage.getItem(RESUME_SESSION_KEY);
+
         if (!token) {
-            token = crypto.randomUUID();
+            token = generateUUID();
             localStorage.setItem(RESUME_SESSION_KEY, token);
         }
+
         return token;
     } catch (error) {
         console.error("Failed to initialise resume session:", error);
-        throw new Error("Browser storage is required to manage resume history.");
+        throw new Error(
+            "Browser storage is required to manage resume history."
+        );
     }
 }
 
