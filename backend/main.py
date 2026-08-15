@@ -663,6 +663,21 @@ class SkillGapRequest(BaseModel):
         default_factory=dict
     )
 
+    # Optional signals used by the weighted recommendation engine.
+    # Both are backward compatible: when absent, their weight drops out
+    # and the score renormalizes over the remaining signals.
+    education: Optional[str] = Field(
+        default=None,
+        max_length=200,
+    )
+
+    resume_skill_ids: Optional[
+        List[int]
+    ] = Field(
+        default=None,
+        max_length=500,
+    )
+
 
 # =====================================================
 # PRIORITY CALCULATOR
@@ -701,6 +716,365 @@ def get_readiness(match_percentage: float):
         return "Developing"
 
     return "Beginner"
+
+
+# =====================================================
+# WEIGHTED CAREER-MATCH ENGINE (P3/P4)
+# =====================================================
+#
+# Career Match is no longer a plain average of skill gaps.
+# It is a weighted combination of up to four signals:
+#
+#   Career Match =
+#       0.70 * importance-weighted skill coverage
+#     + 0.10 * strengths ratio (share of skills fully met)
+#     + 0.10 * education compatibility (education <-> domain)
+#     + 0.10 * resume evidence (resume-backed skills)
+#
+# Importance weighting: a skill's weight is required_level^2, so
+# skills the career demands most dominate the score quadratically.
+# Any signal that was not provided (education / resume) is dropped
+# and the remaining weights are renormalized, so older clients that
+# only send {skills} keep working with a well-defined score.
+
+ENGINE_WEIGHTS = {
+    "skill_coverage": 0.70,
+    "strengths": 0.10,
+    "education": 0.10,
+    "resume_evidence": 0.10,
+}
+
+ENGINE_FORMULA = (
+    "0.70*skill_coverage + 0.10*strengths + 0.10*education "
+    "+ 0.10*resume_evidence (signals that are not provided are "
+    "dropped and the weights renormalized)"
+)
+
+
+EDUCATION_DOMAIN_AFFINITY: Dict[str, Dict[str, List[str]]] = {
+    "Artificial Intelligence & Data Science": {
+        "core": ["data science", "computer", "information technology",
+                 "artificial intelligence", "machine learning", "statistics",
+                 "bca", "mca"],
+        "broad": ["b.tech", "m.tech", "engineering", "mathematics",
+                  "physics", "science"],
+    },
+    "Software Development": {
+        "core": ["computer", "software", "information technology",
+                 "bca", "mca"],
+        "broad": ["b.tech", "m.tech", "electronics", "engineering", "science"],
+    },
+    "Cloud & DevOps": {
+        "core": ["computer", "information technology", "cloud",
+                 "bca", "mca", "network"],
+        "broad": ["b.tech", "m.tech", "electronics", "electrical",
+                  "engineering"],
+    },
+    "Cybersecurity": {
+        "core": ["cyber", "security", "computer", "information technology",
+                 "bca", "mca", "network"],
+        "broad": ["b.tech", "m.tech", "electronics", "engineering"],
+    },
+    "UI/UX & Product Design": {
+        "core": ["design", "b.des", "fine arts", "bfa", "architecture",
+                 "animation"],
+        "broad": ["computer", "arts", "media"],
+    },
+    "Digital Marketing": {
+        "core": ["marketing", "bba", "mba", "pgdm", "business"],
+        "broad": ["commerce", "communication", "journalism", "arts", "media"],
+    },
+    "Finance & Accounting": {
+        "core": ["commerce", "b.com", "m.com", "finance", "accounting",
+                 "economics", "chartered accountant"],
+        "broad": ["business", "bba", "mba", "mathematics", "statistics"],
+    },
+    "Mechanical & Core Engineering": {
+        "core": ["mechanical", "civil", "electrical", "automobile",
+                 "production"],
+        "broad": ["engineering", "b.tech", "m.tech", "diploma"],
+    },
+    "Healthcare & Life Sciences": {
+        "core": ["mbbs", "pharm", "nursing", "biotech", "medicine",
+                 "health", "physiotherapy", "dental"],
+        "broad": ["biology", "life science", "science", "chemistry"],
+    },
+    "Content & Media": {
+        "core": ["journalism", "mass communication", "media", "literature"],
+        "broad": ["english", "arts", "communication", "design", "marketing"],
+    },
+}
+
+
+def education_compatibility(
+    education: Optional[str],
+    domain_name: Optional[str],
+) -> Optional[float]:
+    """0-1 affinity between the user's education and a career's domain.
+
+    Returns None when education is unknown so callers can drop the
+    signal and renormalize weights. 1.0 = direct hit, 0.6 = adjacent
+    field, 0.25 = unrelated, 0.5 = domain has no affinity profile.
+    """
+    if not education or not education.strip():
+        return None
+
+    text = education.lower()
+    affinity = EDUCATION_DOMAIN_AFFINITY.get(domain_name or "")
+    if not affinity:
+        return 0.5
+
+    if any(keyword in text for keyword in affinity["core"]):
+        return 1.0
+    if any(keyword in text for keyword in affinity["broad"]):
+        return 0.6
+    return 0.25
+
+
+def _human_join(items: List[str]) -> str:
+    """'A', 'B', 'C' -> 'A, B and C'."""
+    if len(items) <= 1:
+        return items[0] if items else ""
+    return ", ".join(items[:-1]) + " and " + items[-1]
+
+
+def build_career_explanation(
+    career_name: str,
+    strengths: List[dict],
+    gaps: List[dict],
+    match_percentage: int,
+    readiness: str,
+) -> str:
+    """Deterministic 'Why this career?' narrative (P4).
+
+    Built purely from the user's strengths and gaps so every claim in
+    the text is traceable to the data — no AI call required.
+    """
+    top_strengths = [
+        s["skill"]
+        for s in sorted(
+            strengths,
+            key=lambda x: (x["user_level"], x["required_level"]),
+            reverse=True,
+        )[:3]
+    ]
+    top_gaps = [
+        g["skill"]
+        for g in sorted(
+            gaps,
+            key=lambda x: (x["required_level"], x["gap"]),
+            reverse=True,
+        )[:2]
+    ]
+
+    parts = []
+    if top_strengths:
+        parts.append(
+            f"You already have strong {_human_join(top_strengths)} skills."
+        )
+    else:
+        parts.append(
+            "You have not yet built up the core skills for this role."
+        )
+
+    if top_gaps:
+        verb = "is" if len(top_gaps) == 1 else "are"
+        pronoun = "this skill" if len(top_gaps) == 1 else "these skills"
+        parts.append(
+            f"However, your {_human_join(top_gaps)} {verb} below the "
+            f"required level. Improving {pronoun} would significantly "
+            f"increase your readiness as a {career_name}."
+        )
+    elif top_strengths:
+        parts.append(
+            f"You meet every core requirement — with a {match_percentage}% "
+            f"match you are {readiness.lower()} for a {career_name} role."
+        )
+
+    return " ".join(parts)
+
+
+def compute_career_score(
+    skill_rows: List[Tuple[int, str, Optional[str], int]],
+    user_skills: Optional[Dict[int, int]],
+    career_name: str = "this career",
+    education: Optional[str] = None,
+    domain_name: Optional[str] = None,
+    resume_skill_ids: Optional[set] = None,
+) -> dict:
+    """Score one career against a user's skill levels.
+
+    skill_rows: (skill_id, skill_name, category, required_level) tuples.
+    Returns match_percentage, readiness, strengths, skill_gaps,
+    learning_order, critical_gaps, score_breakdown and explanation.
+    """
+    user_skills = user_skills or {}
+    strengths: List[dict] = []
+    gaps: List[dict] = []
+
+    weighted_num = 0.0
+    weighted_den = 0.0
+    skills_met = 0
+    resume_hits = 0
+
+    for skill_id, name, category, raw_required in skill_rows:
+        try:
+            required_level = int(raw_required or 0)
+        except (ValueError, TypeError):
+            required_level = 0
+        required_level = max(0, min(100, required_level))
+
+        try:
+            user_level = int(user_skills.get(skill_id, 0))
+        except (ValueError, TypeError):
+            user_level = 0
+        user_level = max(0, min(100, user_level))
+
+        # Importance-weighted coverage: weight = required_level^2 so the
+        # skills a career demands hardest dominate the coverage signal.
+        if required_level > 0:
+            importance = required_level * required_level
+            weighted_num += min(user_level, required_level) * required_level
+            weighted_den += importance
+
+        gap = max(0, required_level - user_level)
+
+        if resume_skill_ids and skill_id in resume_skill_ids and user_level > 0:
+            resume_hits += 1
+
+        if gap == 0:
+            skills_met += 1
+            strengths.append(
+                {
+                    "skill_id": skill_id,
+                    "skill": name,
+                    "category": category,
+                    "user_level": user_level,
+                    "required_level": required_level,
+                    "gap": 0,
+                }
+            )
+        else:
+            gaps.append(
+                {
+                    "skill_id": skill_id,
+                    "skill": name,
+                    "category": category,
+                    "user_level": user_level,
+                    "required_level": required_level,
+                    "gap": gap,
+                    "priority": get_priority(gap),
+                }
+            )
+
+    total_skills = len(skill_rows)
+
+    # ---- Signals ----------------------------------------------------
+    coverage = (weighted_num / weighted_den) if weighted_den else 0.0
+    strengths_ratio = (skills_met / total_skills) if total_skills else 0.0
+    education_score = education_compatibility(education, domain_name)
+    resume_score = (
+        (resume_hits / total_skills)
+        if (resume_skill_ids and total_skills)
+        else None
+    )
+
+    # ---- Weighted combination with renormalization -------------------
+    parts = [
+        (coverage, ENGINE_WEIGHTS["skill_coverage"]),
+        (strengths_ratio, ENGINE_WEIGHTS["strengths"]),
+    ]
+    if education_score is not None:
+        parts.append((education_score, ENGINE_WEIGHTS["education"]))
+    if resume_score is not None:
+        parts.append((resume_score, ENGINE_WEIGHTS["resume_evidence"]))
+
+    total_weight = sum(weight for _, weight in parts)
+    final = (
+        sum(value * weight for value, weight in parts) / total_weight
+        if total_weight
+        else 0.0
+    )
+    match_percentage = round(final * 100)
+    readiness = get_readiness(match_percentage)
+
+    # ---- Ordered outputs ---------------------------------------------
+    gaps.sort(
+        key=lambda x: (x["gap"], x["required_level"]),
+        reverse=True,
+    )
+    strengths.sort(
+        key=lambda x: (x["user_level"], x["required_level"]),
+        reverse=True,
+    )
+
+    # Recommended learning order: most-demanded skills first, so the
+    # learning path front-loads what the career values most.
+    learning_order = [
+        {
+            "step": index,
+            "skill": gap["skill"],
+            "category": gap["category"],
+            "user_level": gap["user_level"],
+            "required_level": gap["required_level"],
+            "gap": gap["gap"],
+            "priority": gap["priority"],
+            "reason": (
+                f"Required at {gap['required_level']}% — "
+                f"close a {gap['gap']}-point gap"
+            ),
+        }
+        for index, gap in enumerate(
+            sorted(
+                gaps,
+                key=lambda x: (x["required_level"], x["gap"]),
+                reverse=True,
+            ),
+            start=1,
+        )
+    ]
+
+    critical_gaps = [
+        gap
+        for gap in gaps
+        if gap["priority"] in ("Critical", "High")
+    ]
+
+    explanation = build_career_explanation(
+        career_name or "this career",
+        strengths,
+        gaps,
+        match_percentage,
+        readiness,
+    )
+
+    return {
+        "match_percentage": match_percentage,
+        "readiness": readiness,
+        "strengths": strengths,
+        "skill_gaps": gaps,
+        "learning_order": learning_order,
+        "critical_gaps": critical_gaps,
+        "total_skills": total_skills,
+        "missing_skills": len(gaps),
+        "score_breakdown": {
+            "skill_coverage": round(coverage * 100, 1),
+            "strengths": round(strengths_ratio * 100, 1),
+            "education": (
+                round(education_score * 100, 1)
+                if education_score is not None
+                else None
+            ),
+            "resume_evidence": (
+                round(resume_score * 100, 1)
+                if resume_score is not None
+                else None
+            ),
+            "weights": dict(ENGINE_WEIGHTS),
+            "formula": ENGINE_FORMULA,
+        },
+        "explanation": explanation,
+    }
 
 
 # =====================================================
@@ -767,11 +1141,22 @@ def analyze_skill_gap(
 
 
     # =================================================
-    # ANALYZE CAREERS
+    # ANALYZE CAREERS — weighted engine (P3)
     # =================================================
 
-    results = []
+    # Domain names power the education-compatibility signal.
+    domains_map = {
+        domain.id: domain.name
+        for domain in db.query(models.Domain).all()
+    }
 
+    user_resume_ids = (
+        set(request.resume_skill_ids)
+        if request.resume_skill_ids
+        else None
+    )
+
+    results = []
 
     for career in careers:
 
@@ -782,211 +1167,39 @@ def analyze_skill_gap(
             )
         )
 
-
         # Skip careers without skills
-
         if not career_requirements_list:
             continue
 
-
-        total_required = 0
-        total_user = 0
-
-        gaps = []
-        strengths = []
-
-
-        # =============================================
-        # ANALYZE EACH SKILL
-        # =============================================
-
-        for requirement, skill in (
-            career_requirements_list
-        ):
-
-            required_level = max(
-                0,
-                min(
-                    100,
-                    int(
-                        requirement.required_level
-                    )
-                )
-            )
-
-
-            user_level = request.skills.get(
+        skill_rows = [
+            (
                 skill.id,
-                0
+                skill.name,
+                skill.category,
+                requirement.required_level,
             )
-
-
-            try:
-
-                user_level = int(
-                    user_level
-                )
-
-            except (
-                ValueError,
-                TypeError,
-            ):
-
-                user_level = 0
-
-
-            user_level = max(
-                0,
-                min(
-                    100,
-                    user_level
-                )
+            for requirement, skill in (
+                career_requirements_list
             )
+        ]
 
-
-            # =========================================
-            # SCORE
-            # =========================================
-
-            total_required += required_level
-
-            total_user += min(
-                user_level,
-                required_level
-            )
-
-
-            # =========================================
-            # GAP
-            # =========================================
-
-            gap = max(
-                0,
-                required_level - user_level
-            )
-
-
-            # =========================================
-            # STRENGTH
-            # =========================================
-
-            if gap == 0:
-
-                strengths.append(
-                    {
-                        "skill_id": skill.id,
-                        "skill": skill.name,
-                        "category": skill.category,
-                        "user_level": user_level,
-                        "required_level": required_level,
-                        "gap": 0,
-                    }
-                )
-
-
-            # =========================================
-            # SKILL GAP
-            # =========================================
-
-            else:
-
-                gaps.append(
-                    {
-                        "skill_id": skill.id,
-                        "skill": skill.name,
-                        "category": skill.category,
-                        "user_level": user_level,
-                        "required_level": required_level,
-                        "gap": gap,
-                        "priority": get_priority(
-                            gap
-                        ),
-                    }
-                )
-
-
-        # =============================================
-        # MATCH PERCENTAGE
-        # =============================================
-
-        if total_required > 0:
-
-            match_percentage = (
-                total_user /
-                total_required
-            ) * 100
-
-        else:
-
-            match_percentage = 0
-
-
-        # Match the frontend's displayed score: nearest whole percentage.
-        match_percentage = round(match_percentage)
-
-
-        # =============================================
-        # SORT
-        # =============================================
-
-        gaps.sort(
-            key=lambda x: (
-                x["gap"],
-                x["required_level"]
+        scored = compute_career_score(
+            skill_rows,
+            request.skills,
+            career_name=career.name,
+            education=request.education,
+            domain_name=domains_map.get(
+                career.domain_id
             ),
-            reverse=True,
+            resume_skill_ids=user_resume_ids,
         )
-
-
-        strengths.sort(
-            key=lambda x: (
-                x["user_level"],
-                x["required_level"]
-            ),
-            reverse=True,
-        )
-
-
-        # =============================================
-        # READINESS
-        # =============================================
-
-        readiness = get_readiness(
-            match_percentage
-        )
-
-
-        # =============================================
-        # RESULT
-        # =============================================
 
         results.append(
             {
                 "career_id": career.id,
-
                 "career": career.name,
-
                 "description": career.description,
-
-                "match_percentage": (
-                    match_percentage
-                ),
-
-                "readiness": readiness,
-
-                "strengths": strengths,
-
-                "skill_gaps": gaps,
-
-                "total_skills": (
-                    len(
-                        career_requirements_list
-                    )
-                ),
-
-                "missing_skills": len(
-                    gaps
-                ),
+                **scored,
             }
         )
 
@@ -1865,6 +2078,83 @@ async def analyze_resume(
         except Exception as e:
             print("GAP PREVIEW ERROR:", e)
 
+    # --- Career recommendations from resume (P1: completes the pipeline ---
+    #     upload -> extract text -> extract skills -> match to DB ->
+    #     estimate levels -> CAREER RECOMMENDATION) -----------------------
+    #     Uses the same weighted engine as /api/analyze, fed with the
+    #     resume-inferred skill levels, so both flows agree.
+    career_recommendations = []
+    try:
+        all_careers = db.query(models.Career).all()
+        domains_map = {
+            domain.id: domain.name
+            for domain in db.query(models.Domain).all()
+        }
+        req_rows = (
+            db.query(
+                models.CareerSkillRequirement,
+                models.Skill,
+            )
+            .join(
+                models.Skill,
+                models.Skill.id
+                == models.CareerSkillRequirement.skill_id,
+            )
+            .all()
+        )
+        reqs_by_career = defaultdict(list)
+        for requirement, skill in req_rows:
+            reqs_by_career[requirement.career_id].append(
+                (
+                    skill.id,
+                    skill.name,
+                    skill.category,
+                    requirement.required_level,
+                )
+            )
+
+        inferred_levels = {
+            m["skill_id"]: m["inferred_level"]
+            for m in mapped
+            if m["skill_id"] is not None
+        }
+        resume_ids = set(inferred_levels.keys()) or None
+
+        scored_careers = []
+        for career in all_careers:
+            rows = reqs_by_career.get(career.id)
+            if not rows:
+                continue
+            scored = compute_career_score(
+                rows,
+                inferred_levels,
+                career_name=career.name,
+                education=education,
+                domain_name=domains_map.get(career.domain_id),
+                resume_skill_ids=resume_ids,
+            )
+            scored_careers.append(
+                {
+                    "career_id": career.id,
+                    "career": career.name,
+                    "domain": domains_map.get(career.domain_id),
+                    "match_percentage": scored["match_percentage"],
+                    "readiness": scored["readiness"],
+                    "explanation": scored["explanation"],
+                    "top_gaps": scored["skill_gaps"][:3],
+                    "total_skills": scored["total_skills"],
+                    "missing_skills": scored["missing_skills"],
+                }
+            )
+
+        scored_careers.sort(
+            key=lambda x: x["match_percentage"],
+            reverse=True,
+        )
+        career_recommendations = scored_careers[:5]
+    except Exception as e:
+        print("RESUME CAREER RECOMMENDATION ERROR:", e)
+
     # --- Persist for Workbench (best-effort, don't fail upload if DB down) ---
     saved_id = None
     try:
@@ -1924,6 +2214,9 @@ async def analyze_resume(
         # Frontend can directly do: setSkillLevels({...mapped levels})
         "inferred_levels": {str(m["skill_id"]): m["inferred_level"] for m in mapped if m["skill_id"] is not None},
         "gap_preview": gap_preview,
+        # P1: top-5 careers ranked by the weighted engine using
+        # resume-inferred skill levels (edu + resume evidence signals on)
+        "career_recommendations": career_recommendations,
         "saved_id": saved_id,
         "workbench_hint": "SELECT * FROM resume_analyses ORDER BY created_at DESC LIMIT 5;" if saved_id else "Run backend/workbench/init.sql in MySQL Workbench to enable saving.",
     }

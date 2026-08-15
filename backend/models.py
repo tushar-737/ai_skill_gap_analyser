@@ -8,6 +8,7 @@ from sqlalchemy import (
     ForeignKey,
     DateTime,
     JSON,
+    UniqueConstraint,
 )
 
 from .database import Base
@@ -43,6 +44,17 @@ class EducationCategory(Base):
 class EducationProgram(Base):
 
     __tablename__ = "education_programs"
+
+    # Prevent duplicate programs such as:
+    # BCA
+    # BCA
+    # BCA
+    __table_args__ = (
+        UniqueConstraint(
+            "name",
+            name="uq_education_program_name"
+        ),
+    )
 
     id = Column(
         Integer,
@@ -99,12 +111,29 @@ class Career(Base):
 
     __tablename__ = "careers_v2"
 
+    # Every career path must be unique.
+    #
+    # Example:
+    # Data Scientist
+    # Data Scientist   <-- NOT allowed
+    #
+    __table_args__ = (
+        UniqueConstraint(
+            "name",
+            name="uq_career_name"
+        ),
+    )
+
     id = Column(
         Integer,
         primary_key=True,
         index=True
     )
 
+    # Each career has one PRIMARY domain.
+    #
+    # We are intentionally keeping this as one-to-many
+    # instead of introducing a many-to-many relationship.
     domain_id = Column(
         Integer,
         ForeignKey("domains.id"),
@@ -137,6 +166,14 @@ class Skill(Base):
         index=True
     )
 
+    # Canonical skill name.
+    #
+    # Examples:
+    # Python
+    # Pandas
+    # NumPy
+    #
+    # These must remain separate skills.
     name = Column(
         String(150),
         unique=True,
@@ -158,6 +195,23 @@ class CareerSkillRequirement(Base):
 
     __tablename__ = "career_skill_requirements"
 
+    # A career can have a particular skill ONLY ONCE.
+    #
+    # Prevents bad data such as:
+    #
+    # Data Scientist → Python → 90
+    # Data Scientist → Python → 80
+    # Data Scientist → Python → 75
+    #
+    # Only one Data Scientist → Python mapping is allowed.
+    __table_args__ = (
+        UniqueConstraint(
+            "career_id",
+            "skill_id",
+            name="uq_career_skill"
+        ),
+    )
+
     id = Column(
         Integer,
         primary_key=True,
@@ -167,15 +221,23 @@ class CareerSkillRequirement(Base):
     career_id = Column(
         Integer,
         ForeignKey("careers_v2.id"),
-        nullable=False
+        nullable=False,
+        index=True
     )
 
     skill_id = Column(
         Integer,
         ForeignKey("skills_v2.id"),
-        nullable=False
+        nullable=False,
+        index=True
     )
 
+    # Required skill level from 0-100.
+    #
+    # Example:
+    # Python → 90
+    # SQL → 80
+    # Excel → 70
     required_level = Column(
         Integer,
         nullable=False,
@@ -184,9 +246,7 @@ class CareerSkillRequirement(Base):
 
 
 # =====================================================
-# RESUME ANALYSIS — stores uploaded resume parses
-# Uses JSON for extracted_skills so it works in MySQL 5.7+
-# Workbench: forward-engineer via workbench/init.sql
+# RESUME ANALYSIS
 # =====================================================
 
 class ResumeAnalysis(Base):
@@ -199,32 +259,78 @@ class ResumeAnalysis(Base):
         index=True
     )
 
+    # Original uploaded filename
     file_name = Column(
         String(255),
         nullable=False
     )
 
+    # File size in bytes
     file_size = Column(Integer)
 
-    # Opaque client-generated identifier used to isolate each browser's history.
-    # It is not an authentication substitute for a multi-user production app.
-    owner_token = Column(String(64), index=True, nullable=True)
-
-    raw_text = Column(Text)
-
-    # { skills: [{ skill_id, name, inferred_level, evidence }], ... }
-    extracted_skills = Column(JSON)
-
-    # Optional: which career the user was targeting at upload time
-    target_career_id = Column(
-        Integer,
-        ForeignKey("careers_v2.id"),
+    # -------------------------------------------------
+    # Browser/session owner identifier
+    # -------------------------------------------------
+    #
+    # Used to isolate resume history between browser
+    # sessions.
+    #
+    # This is NOT authentication.
+    #
+    owner_token = Column(
+        String(64),
+        index=True,
         nullable=True
     )
 
-    # How the extraction was done: "gemini" | "keyword" | "hybrid"
-    extraction_source = Column(String(20), default="keyword")
+    # Original extracted resume text
+    raw_text = Column(Text)
 
+    # -------------------------------------------------
+    # Extracted skills
+    # -------------------------------------------------
+    #
+    # Example:
+    #
+    # {
+    #     "skills": [
+    #         {
+    #             "skill_id": 12,
+    #             "name": "Python",
+    #             "inferred_level": 80,
+    #             "evidence": "Developed ML projects..."
+    #         }
+    #     ]
+    # }
+    #
+    extracted_skills = Column(JSON)
+
+    # -------------------------------------------------
+    # Target career
+    # -------------------------------------------------
+    #
+    # Optional because a resume can be uploaded before
+    # a career is selected.
+    #
+    target_career_id = Column(
+        Integer,
+        ForeignKey("careers_v2.id"),
+        nullable=True,
+        index=True
+    )
+
+    # How the resume was analyzed:
+    #
+    # keyword
+    # gemini
+    # hybrid
+    #
+    extraction_source = Column(
+        String(20),
+        default="keyword"
+    )
+
+    # Creation timestamp
     created_at = Column(
         DateTime,
         default=datetime.utcnow,

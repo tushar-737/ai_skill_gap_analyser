@@ -138,7 +138,7 @@ export default function SkillsRater({
 
                 <div>
                     <span className="journey-kicker">
-                        Step 4 — Your Skills
+                        Step 4 of 5 — Your Skills
                     </span>
 
                     <h2>How strong are your skills?</h2>
@@ -483,11 +483,17 @@ export default function SkillsRater({
                                                                             </span>
 
                                                                             <span
-                                                                                className={`skill-v2-pri pri-${pri.cls}`}
+                                                                                className={`skill-v2-status status-${
+                                                                                    gap ===
+                                                                                    0
+                                                                                        ? "ready"
+                                                                                        : pri.cls
+                                                                                }`}
                                                                             >
-                                                                                {
-                                                                                    pri.label
-                                                                                }
+                                                                                {gap ===
+                                                                                0
+                                                                                    ? "✓ Ready"
+                                                                                    : `Gap ${gap}%`}
                                                                             </span>
                                                                         </div>
                                                                     </div>
@@ -540,19 +546,7 @@ export default function SkillsRater({
                                                                     </div>
 
                                                                     <div className="skill-item-footer">
-                                                                        <span
-                                                                            className={`skill-gap-badge ${
-                                                                                gap ===
-                                                                                0
-                                                                                    ? "good"
-                                                                                    : pri.cls
-                                                                            }`}
-                                                                        >
-                                                                            {gap ===
-                                                                            0
-                                                                                ? "✓ Ready"
-                                                                                : `Gap: ${gap}% · Needs development`}
-                                                                        </span>
+                                                                         
 
                                                                         <button
                                                                             type="button"
@@ -576,42 +570,6 @@ export default function SkillsRater({
                                                                                 ? "☑ Not familiar"
                                                                                 : "☐ Not familiar"}
                                                                         </button>
-                                                                    </div>
-
-                                                                    <div
-                                                                        className="skill-scale-ticks"
-                                                                        aria-hidden
-                                                                    >
-                                                                        <span>
-                                                                            0
-                                                                        </span>
-                                                                        <span>
-                                                                            25
-                                                                        </span>
-                                                                        <span>
-                                                                            50
-                                                                        </span>
-                                                                        <span>
-                                                                            75
-                                                                        </span>
-                                                                        <span>
-                                                                            100
-                                                                        </span>
-                                                                    </div>
-
-                                                                    <div
-                                                                        className="skill-scale-labels"
-                                                                        aria-hidden
-                                                                    >
-                                                                        <span>
-                                                                            Beginner
-                                                                        </span>
-                                                                        <span>
-                                                                            Intermediate
-                                                                        </span>
-                                                                        <span>
-                                                                            Advanced
-                                                                        </span>
                                                                     </div>
 
                                                                     <input

@@ -9,6 +9,7 @@ import { useCareerSkills } from "./hooks/useCareerSkills";
 import { useAiRoadmap } from "./hooks/useAiRoadmap";
 
 import { computeCareerRecommendations, computeResults } from "./lib/scoring";
+import { DEMO_PROFILE, demoLevelForSkill, findByIncludes } from "./lib/demo";
 import { decodeShareState, encodeShareState, copyText } from "./lib/share";
 import { loadState, saveState } from "./lib/storage";
 
@@ -41,6 +42,10 @@ function App() {
     const [wizardStep, setWizardStep] = useState(0);
     const [showWelcome, setShowWelcome] = useState(false);
     const [savedForWelcome, setSavedForWelcome] = useState(null);
+    // P1: career recommendations returned by the resume pipeline
+    const [resumeCareerRecs, setResumeCareerRecs] = useState([]);
+    // P3: skill ids backed by resume evidence (feeds the engine signal)
+    const [resumeSkillIds, setResumeSkillIds] = useState([]);
 
     const [error, setError] = useState("");
     const [formError, setFormError] = useState("");
@@ -52,6 +57,7 @@ function App() {
 
     const pendingLevelsRef = useRef(null);
     const pendingResumeRef = useRef(null);
+    const demoPendingRef = useRef(null);
 
     // Restore: share link takes precedence, else show Welcome back if saved
     useEffect(() => {
@@ -87,11 +93,13 @@ function App() {
         const resumePending = pendingResumeRef.current;
         const base = pending && String(pending.c) === String(selectedCareer) ? pending.l : {};
         const hasShareBase = pending && String(pending.c) === String(selectedCareer);
-        const resumeBase = !hasShareBase && resumePending ? resumePending : {};
+        const demoByName = pending && pending.demoByName ? pending.demoByName : null;
+        const resumeBase = !hasShareBase && !demoByName && resumePending ? resumePending : {};
         const initialLevels = {};
         requiredSkills.forEach((skill) => {
             const sid = String(skill.skill_id);
-            if (hasShareBase && base[sid] !== undefined) initialLevels[skill.skill_id] = Number(base[sid]) || 0;
+            if (demoByName) initialLevels[skill.skill_id] = demoLevelForSkill(skill);
+            else if (hasShareBase && base[sid] !== undefined) initialLevels[skill.skill_id] = Number(base[sid]) || 0;
             else if (resumeBase[sid] !== undefined) initialLevels[skill.skill_id] = Number(resumeBase[sid]) || 0;
             else if (base[sid] !== undefined) initialLevels[skill.skill_id] = Number(base[sid]) || 0;
             else initialLevels[skill.skill_id] = 0;
@@ -102,6 +110,55 @@ function App() {
         if (pending && pending.showResults) setShowResults(true);
         else setShowResults(false);
     }, [selectedCareer, requiredSkills]);
+
+    // P5 demo flow: once the domain's careers load, pick the demo career;
+    // the effect above then fills slider levels by skill name and shows results.
+    useEffect(() => {
+        const pendingDemo = demoPendingRef.current;
+        if (!pendingDemo || careers.length === 0) return;
+        // Fall back to the first career of the domain if the demo's
+        // preferred career name is not in this database.
+        const career = findByIncludes(careers, pendingDemo.careerIncludes) || careers[0];
+        if (!career) return;
+        demoPendingRef.current = null;
+        pendingLevelsRef.current = {
+            c: String(career.id),
+            demoByName: true,
+            showResults: true,
+        };
+        setSelectedCareer(String(career.id));
+        setWizardStep(3);
+    }, [careers, selectedCareer, selectedDomain]);
+
+    // P5: one-click demo assessment for presentations/vivas.
+    function handleTryDemo() {
+        const edu = findByIncludes(education, DEMO_PROFILE.educationIncludes) || education[0];
+        const dom = findByIncludes(domains, DEMO_PROFILE.domainIncludes) || domains[0];
+        if (!edu || !dom) {
+            setFormError("Demo data is unavailable — please check the backend connection.");
+            return;
+        }
+        try {
+            localStorage.removeItem("skillgap:state:v1");
+        } catch {}
+        clearShareHash();
+        setShowWelcome(false);
+        setSavedForWelcome(null);
+        setResumeCareerRecs([]);
+        setResumeSkillIds([]);
+        setError("");
+        setFormError("");
+        demoPendingRef.current = { careerIncludes: DEMO_PROFILE.careerIncludes };
+        pendingLevelsRef.current = null;
+        pendingResumeRef.current = null;
+        setSelectedEducation(String(edu.id));
+        setSelectedDomain(String(dom.id));
+        setSelectedCareer("");
+        setSkillLevels({});
+        setShowResults(false);
+        setWizardStep(2);
+        setTimeout(() => document.getElementById("main-content")?.scrollIntoView({ behavior: "smooth" }), 100);
+    }
 
     function handleWelcomeContinue() {
         const saved = savedForWelcome;
@@ -128,6 +185,18 @@ function App() {
         setResumeInfo(data);
         setHistoryRefresh((k) => k + 1);
         setError("");
+        // P1 + P3 signals: ranked careers from the resume pipeline and the
+        // set of resume-backed skill ids (engine's resume-evidence signal)
+        setResumeCareerRecs(
+            Array.isArray(data?.career_recommendations) ? data.career_recommendations : []
+        );
+        if (data?.inferred_levels) {
+            setResumeSkillIds(Object.keys(data.inferred_levels));
+        } else if (data?.extracted_skills) {
+            setResumeSkillIds(
+                data.extracted_skills.filter((s) => s.skill_id).map((s) => String(s.skill_id))
+            );
+        }
         if (data?.inferred_levels) {
             const inferred = data.inferred_levels;
             const sourceLabel = data.extraction_source === "groq" ? "Groq AI" : data.extraction_source === "gemini" ? "Gemini AI" : "Keyword";
@@ -262,8 +331,11 @@ function App() {
         setFormError("");
         setError("");
         setResumeInfo(null);
+        setResumeCareerRecs([]);
+        setResumeSkillIds([]);
         pendingLevelsRef.current = null;
         pendingResumeRef.current = null;
+        demoPendingRef.current = null;
         setWizardStep(0);
         try {
             localStorage.removeItem("skillgap:state:v1");
@@ -273,8 +345,25 @@ function App() {
         window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    const results = useMemo(() => computeResults(requiredSkills, skillLevels), [requiredSkills, skillLevels]);
-    const careerRecommendations = useMemo(() => computeCareerRecommendations(domainCareerSkills, selectedCareer, skillLevels), [domainCareerSkills, selectedCareer, skillLevels]);
+    const selectedEducationName = education.find((e) => String(e.id) === String(selectedEducation))?.name || "";
+    const selectedDomainName = domains.find((d) => String(d.id) === String(selectedDomain))?.name || "";
+    const engineOptions = useMemo(
+        () => ({
+            education: selectedEducationName,
+            domainName: selectedDomainName,
+            resumeSkillIds,
+        }),
+        [selectedEducationName, selectedDomainName, resumeSkillIds]
+    );
+
+    const results = useMemo(
+        () => computeResults(requiredSkills, skillLevels, engineOptions),
+        [requiredSkills, skillLevels, engineOptions]
+    );
+    const careerRecommendations = useMemo(
+        () => computeCareerRecommendations(domainCareerSkills, selectedCareer, skillLevels, engineOptions),
+        [domainCareerSkills, selectedCareer, skillLevels, engineOptions]
+    );
     const selectedCareerName = careers.find((c) => String(c.id) === String(selectedCareer))?.name;
 
     const { roadmap: aiRoadmap, loading: loadingRoadmap, error: roadmapError } = useAiRoadmap({
@@ -298,7 +387,7 @@ function App() {
                 Skip to main content
             </a>
             <Header onReset={() => handleReset(true)} />
-            <Hero />
+            <Hero onTryDemo={handleTryDemo} />
             <StatsSection />
 
             <main id="main-content" className="assessment-container">
@@ -416,60 +505,57 @@ function App() {
 
                 {wizardStep === 3 && (
                     <>
-                        <div className="journey-card" style={{ padding: "18px 20px" }}>
-                            <div className="journey-header">
-                                <div className="journey-icon" aria-hidden>
-                                    📄
-                                </div>
-                                <div>
-                                    <span className="journey-kicker">Step 4 of 5 — Resume (Optional)</span>
-                                    <h2>Have a resume?</h2>
-                                    <p>Upload it and we&apos;ll use your existing skills to help build your profile. Or skip and rate manually.</p>
-                                </div>
-                                <span className="journey-step-badge">4</span>
-                            </div>
-                            <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-                                <button type="button" className="secondary-button" onClick={() => setWizardStep(2)}>
-                                    ← Back
-                                </button>
-                                <button type="button" className="secondary-button" onClick={() => document.querySelector(".skills-rater")?.scrollIntoView({ behavior: "smooth" })}>
-                                    Skip for now
-                                </button>
-                            </div>
+                        <ResumeUploader selectedCareer={selectedCareer} selectedEducation={selectedEducation} onExtracted={handleResumeExtracted} />
+
+                        <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+                            <button type="button" className="secondary-button" onClick={() => setWizardStep(2)}>
+                                ← Back to Career
+                            </button>
+                            <button type="button" className="secondary-button" onClick={() => document.querySelector(".skills-rater")?.scrollIntoView({ behavior: "smooth" })}>
+                                Skip resume — rate my skills ↓
+                            </button>
                         </div>
 
-                        <ResumeUploader selectedCareer={selectedCareer} selectedEducation={selectedEducation} onExtracted={handleResumeExtracted} />
                         <ResumeHistory onReload={handleHistoryReload} refreshKey={historyRefresh} />
+
+                        {/* P1: careers the resume pipeline recommends */}
+                        {resumeCareerRecs.length > 0 && (
+                            <section className="recommendation-card alt-careers-v2 resume-career-recs">
+                                <span className="eyebrow" style={{ color: "#ea580c" }}>
+                                    🎯 FROM YOUR RESUME
+                                </span>
+                                <h3>Top careers for this resume</h3>
+                                <p>Ranked by our weighted engine using the skills we found in your resume.</p>
+                                <div className="alt-list">
+                                    {resumeCareerRecs.map((career, index) => {
+                                        const pct = Math.min(100, Math.max(0, career.match_percentage || 0));
+                                        return (
+                                            <div key={career.career_id || career.career} className="alt-card" role="listitem">
+                                                <div className="alt-card-header">
+                                                    <strong>
+                                                        <span className="rank-badge">#{index + 1}</span> {career.career}
+                                                    </strong>
+                                                    <span className="alt-pct">{pct}% Match</span>
+                                                </div>
+                                                <div className="alt-track" aria-label={`${pct} percent match`}>
+                                                    <div className="alt-fill" style={{ width: `${pct}%` }} />
+                                                </div>
+                                                <small className="alt-why">
+                                                    {career.domain && <>{career.domain} · </>}
+                                                    {career.readiness}
+                                                    {career.explanation ? ` — ${career.explanation}` : ""}
+                                                </small>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </section>
+                        )}
                     </>
                 )}
 
                 {wizardStep >= 3 && selectedCareer && (
                     <>
-                        <div className="skill-intro">
-                            <h3>📊 Rate your current skills</h3>
-                            <p>
-                                Move each slider to the level you think best represents your current ability. <strong>0% = Beginner · 50% = Intermediate · 100% = Advanced</strong>. Your score will be
-                                compared with the level required for your target career.
-                            </p>
-                            <div className="skill-scale">
-                                <span>0 Beginner</span>
-                                <span>25</span>
-                                <span>50 Intermediate</span>
-                                <span>75</span>
-                                <span>100 Advanced</span>
-                            </div>
-                            {requiredSkills.length > 0 && (
-                                <div className="skill-progress">
-                                    <span>
-                                        Skills rated: {Object.keys(skillLevels).filter((k) => skillLevels[k] > 0).length} / {requiredSkills.length}
-                                    </span>
-                                    <div className="skill-progress-track">
-                                        <div className="skill-progress-fill" style={{ width: `${Math.round((Object.keys(skillLevels).filter((k) => skillLevels[k] > 0).length / Math.max(1, requiredSkills.length)) * 100)}%` }} />
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
                         <SkillsRater skills={requiredSkills} levels={skillLevels} loading={loadingSkills} onSkillChange={handleSkillChange} onAnalyze={handleAnalyze} />
 
                         <div className="journey-actions" style={{ justifyContent: "space-between", marginTop: 12 }}>

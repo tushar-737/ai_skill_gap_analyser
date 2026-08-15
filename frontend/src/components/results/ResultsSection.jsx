@@ -1,11 +1,20 @@
 
 import { useState } from "react";
 
+import { buildCareerExplanation } from "../../lib/scoring";
+
 import AiRecommendation from "./AiRecommendation";
 import PriorityList from "./PriorityList";
 import ScoreCard from "./ScoreCard";
 import SkillListCard from "./SkillListCard";
 import SkillGapChart from "./SkillGapChart";
+
+const BREAKDOWN_ROWS = [
+    { key: "skillCoverage", label: "Skill coverage", weight: "70%" },
+    { key: "strengths", label: "Strengths bonus", weight: "10%" },
+    { key: "education", label: "Education fit", weight: "10%" },
+    { key: "resumeEvidence", label: "Resume evidence", weight: "10%" },
+];
 
 export default function ResultsSection({
     results,
@@ -29,9 +38,21 @@ export default function ResultsSection({
         }
     }
 
-    const criticalGaps = results.skillGaps.filter(
-        (s) => s.gap > 50
+    const criticalGaps = (
+        results.criticalGaps ||
+        results.skillGaps.filter((s) => s.gap > 50)
     ).length;
+
+    // P4: deterministic explanation built from the user's own data
+    const explanation = buildCareerExplanation(
+        careerName,
+        results.strongSkills,
+        results.skillGaps,
+        results.matchScore,
+        results.readiness
+    );
+
+    const learningOrder = (results.learningOrder || []).slice(0, 5);
 
     const biggestGap = results.skillGaps[0];
 
@@ -118,7 +139,7 @@ export default function ResultsSection({
                     style={{
                         display: "block",
                         marginBottom: 6,
-                        color: "#2563eb",
+                        color: "#ea580c",
                         fontWeight: 800,
                         fontSize: 12,
                         letterSpacing: "0.08em",
@@ -331,6 +352,63 @@ export default function ResultsSection({
             </div>
 
             {/* =====================================================
+                WHY THIS CAREER (P4) + SCORE BREAKDOWN (P3)
+               ===================================================== */}
+
+            <div className="result-card why-card">
+                <div className="result-card-header">
+                    <h3>💡 Why {careerName || "this career"}?</h3>
+                </div>
+
+                <p className="why-explanation">{explanation}</p>
+
+                {results.scoreBreakdown && (
+                    <div className="score-breakdown">
+                        <small className="score-breakdown-title">
+                            How your {results.matchScore}% is calculated
+                            (weighted engine):
+                        </small>
+
+                        {BREAKDOWN_ROWS.map((row) => {
+                            const value =
+                                results.scoreBreakdown[row.key];
+                            return (
+                                <div
+                                    key={row.key}
+                                    className={`breakdown-row ${
+                                        value === null
+                                            ? "breakdown-missing"
+                                            : ""
+                                    }`}
+                                >
+                                    <span className="breakdown-label">
+                                        {row.label}
+                                        <em>weight {row.weight}</em>
+                                    </span>
+                                    <span className="breakdown-track">
+                                        <span
+                                            className="breakdown-fill"
+                                            style={{
+                                                width: `${Math.min(
+                                                    100,
+                                                    Math.max(0, value ?? 0)
+                                                )}%`,
+                                            }}
+                                        />
+                                    </span>
+                                    <span className="breakdown-value">
+                                        {value === null
+                                            ? "n/a"
+                                            : `${value}%`}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+            {/* =====================================================
                 SKILL GAP VISUALIZATION
                ===================================================== */}
 
@@ -368,6 +446,55 @@ export default function ResultsSection({
                 <PriorityList
                     skills={results.skillGaps}
                 />
+            )}
+
+            {/* =====================================================
+                RECOMMENDED LEARNING ORDER (P2)
+               ===================================================== */}
+
+            {learningOrder.length > 0 && (
+                <div className="result-card learning-order-card">
+                    <div className="result-card-header">
+                        <h3>🪜 Recommended Learning Order</h3>
+                        <span>{learningOrder.length}</span>
+                    </div>
+
+                    <p className="priority-description">
+                        Ordered by how much the career demands each
+                        skill — close these in sequence for the fastest
+                        path to job-ready.
+                    </p>
+
+                    <ol className="learning-order-list">
+                        {learningOrder.map((skill) => (
+                            <li
+                                key={skill.skill_id}
+                                className="learning-order-item"
+                            >
+                                <span className="learning-order-step">
+                                    {skill.step}
+                                </span>
+                                <div className="learning-order-main">
+                                    <strong>
+                                        {skill.skill || skill.name}
+                                    </strong>
+                                    <small>
+                                        {skill.current}% →{" "}
+                                        {skill.required_level}% ·{" "}
+                                        {skill.reason}
+                                    </small>
+                                </div>
+                                <span
+                                    className={`priority-badge priority-badge-${String(
+                                        skill.priority || ""
+                                    ).toLowerCase()}`}
+                                >
+                                    {skill.priority}
+                                </span>
+                            </li>
+                        ))}
+                    </ol>
+                </div>
             )}
 
             {/* =====================================================

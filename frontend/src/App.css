@@ -52,7 +52,7 @@
     width: 36px;
     height: 36px;
     border-radius: 10px;
-    background: #2563eb;
+    background: #ea580c;
     color: white;
     font-size: 14px;
     font-weight: 800;
@@ -60,7 +60,7 @@
 }
 
 .brand-highlight {
-    color: #2563eb;
+    color: #ea580c;
 }
 
 .subtitle {
@@ -80,7 +80,7 @@
     margin: 0 auto;
     padding: 48px 32px 36px;
     text-align: center;
-    background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 55%, #ffffff 100%);
+    background: linear-gradient(135deg, #fdeee2 0%, #faf6f1 55%, #ffffff 100%);
     border: 1px solid #e2e8f0;
     border-radius: 24px;
     box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
@@ -97,7 +97,7 @@
 
 .hero h1 span {
     display: block;
-    background: linear-gradient(90deg, #2563eb, #06b6d4);
+    background: linear-gradient(90deg, #ea580c, #f59e0b);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -215,7 +215,7 @@
 
 .skill-info span {
     font-weight: 700;
-    color: #2563eb;
+    color: #ea580c;
     font-size: 14px;
     min-width: 46px;
     text-align: right;
@@ -228,7 +228,7 @@
     padding: 14px 22px;
     border: none;
     border-radius: 12px;
-    background: #2563eb;
+    background: #ea580c;
     color: white;
     font-weight: 700;
     font-size: 15px;
@@ -237,7 +237,7 @@
 }
 
 .analyze-button:hover {
-    background: #1d4ed8;
+    background: #c2410c;
     transform: translateY(-1px);
 }
 
@@ -271,7 +271,7 @@
     width: 36px;
     height: 36px;
     border: 3px solid #e2e8f0;
-    border-top-color: #2563eb;
+    border-top-color: #ea580c;
     border-radius: 50%;
     animation: spin 0.9s linear infinite;
 }
@@ -372,11 +372,11 @@
 }
 
 .step.active {
-    color: #2563eb;
+    color: #ea580c;
 }
 
 .step.active .step-number {
-    background: #2563eb;
+    background: #ea580c;
     color: white;
 }
 
@@ -426,7 +426,7 @@
 }
 
 .form-group select:focus {
-    border-color: #2563eb;
+    border-color: #ea580c;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
@@ -443,7 +443,7 @@
 }
 
 .skill-item {
-    background: #f8fafc;
+    background: #faf6f1;
     padding: 20px;
     border-radius: 14px;
     border: 1px solid #e2e8f0;
@@ -463,12 +463,12 @@
 
 .skill-value {
     font-weight: 700;
-    color: #2563eb;
+    color: #ea580c;
 }
 
 .skill-item input[type="range"] {
     width: 100%;
-    accent-color: #2563eb;
+    accent-color: #ea580c;
 }
 
 
@@ -481,14 +481,14 @@
     padding: 13px 24px;
     border: none;
     border-radius: 10px;
-    background: #2563eb;
+    background: #ea580c;
     color: white;
     font-weight: 700;
     transition: 0.2s;
 }
 
 .primary-button:hover {
-    background: #1d4ed8;
+    background: #c2410c;
     transform: translateY(-1px);
 }
 
@@ -574,14 +574,14 @@
 }
 
 .share-button:hover {
-    border-color: #2563eb;
-    color: #2563eb;
+    border-color: #ea580c;
+    color: #ea580c;
 }
 
 .result-card {
     padding: 20px;
     border-radius: 14px;
-    background: #f8fafc;
+    background: #faf6f1;
     border: 1px solid #e2e8f0;
     margin-bottom: 15px;
 }
@@ -628,7 +628,7 @@
     gap: 28px;
     padding: 24px;
     border-radius: 16px;
-    background: linear-gradient(135deg, #f8fafc, #eef2ff);
+    background: linear-gradient(135deg, #faf6f1, #fdeee2);
     border: 1px solid #e2e8f0;
     margin-bottom: 20px;
 }
@@ -653,8 +653,8 @@
     display: inline-block;
     padding: 5px 14px;
     border-radius: 999px;
-    background: #e0e7ff;
-    color: #4338ca;
+    background: #ffedd5;
+    color: #9a3412;
     font-size: 14px;
 }
 
@@ -687,7 +687,7 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: #eef2ff;
+    background: #fdeee2;
     font-size: 18px;
     flex-shrink: 0;
 }
@@ -776,15 +776,15 @@
     display: inline-block;
     padding: 5px 12px;
     border-radius: 999px;
-    background: #eef2ff;
-    color: #4338ca;
+    background: #fdeee2;
+    color: #9a3412;
     font-size: 12px;
     font-weight: 600;
     transition: 0.2s;
 }
 
 .learn-link:hover {
-    background: #e0e7ff;
+    background: #ffedd5;
 }
 
 
@@ -836,7 +836,7 @@
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: #2563eb;
+    background: #ea580c;
     color: white;
     font-weight: 700;
     font-size: 13px;
@@ -889,7 +889,7 @@
     flex-shrink: 0;
     font-weight: 700;
     font-size: 18px;
-    color: #4338ca;
+    color: #9a3412;
 }
 
 
@@ -901,8 +901,8 @@
     margin-top: 20px;
     padding: 24px;
     border-radius: 14px;
-    background: linear-gradient(135deg, #eef2ff, #f8fafc);
-    border: 1px solid #e0e7ff;
+    background: linear-gradient(135deg, #fdeee2, #faf6f1);
+    border: 1px solid #ffedd5;
 }
 
 .recommendation-card h3 {
@@ -950,8 +950,8 @@
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.03em;
-    color: #4338ca;
-    background: #e0e7ff;
+    color: #9a3412;
+    background: #ffedd5;
     padding: 2px 8px;
     border-radius: 999px;
     margin-right: 6px;
@@ -967,7 +967,7 @@
     padding: 28px 20px;
     border: 2px dashed #cbd5e1;
     border-radius: 16px;
-    background: #f8fafc;
+    background: #faf6f1;
     display: flex;
     align-items: center;
     gap: 16px;
@@ -978,7 +978,7 @@
 
 .resume-dropzone:hover,
 .resume-dropzone.drag-over {
-    border-color: #2563eb;
+    border-color: #ea580c;
     background: #eff6ff;
     transform: translateY(-1px);
 }
@@ -1039,15 +1039,15 @@
 }
 
 .secondary-button:hover {
-    border-color: #2563eb;
-    color: #2563eb;
+    border-color: #ea580c;
+    color: #ea580c;
 }
 
 .resume-result {
     margin-top: 18px;
     padding: 18px;
     border-radius: 14px;
-    background: #f8fafc;
+    background: #faf6f1;
     border: 1px solid #e2e8f0;
 }
 
@@ -1080,8 +1080,8 @@
 }
 
 .resume-badge.kw {
-    background: #e0e7ff;
-    color: #4338ca;
+    background: #ffedd5;
+    color: #9a3412;
 }
 
 .resume-summary {
@@ -1123,7 +1123,7 @@
 
 .resume-skill-chip em {
     font-style: normal;
-    color: #2563eb;
+    color: #ea580c;
     font-weight: 700;
 }
 
@@ -1134,7 +1134,7 @@
 
 .resume-details summary {
     cursor: pointer;
-    color: #2563eb;
+    color: #ea580c;
     font-weight: 600;
 }
 
@@ -1173,7 +1173,7 @@
     gap: 14px;
     padding: 14px 16px;
     border-radius: 12px;
-    background: #f8fafc;
+    background: #faf6f1;
     border: 1px solid #e2e8f0;
 }
 
@@ -1317,7 +1317,7 @@
 }
 
 .nav-links a:hover {
-    color: #2563eb;
+    color: #ea580c;
 }
 
 .nav-cta {
@@ -1344,7 +1344,7 @@
     background:
         radial-gradient(900px 400px at 18% 0%, rgba(37, 99, 235, 0.08), transparent 60%),
         radial-gradient(700px 360px at 82% 10%, rgba(124, 58, 237, 0.07), transparent 55%),
-        linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        linear-gradient(180deg, #ffffff 0%, #faf6f1 100%);
     border: none;
     border-bottom: 1px solid #e2e8f0;
     border-radius: 0;
@@ -1380,7 +1380,7 @@
 }
 
 .hero h1 span {
-    background: linear-gradient(90deg, #2563eb 0%, #7c3aed 55%, #06b6d4 100%);
+    background: linear-gradient(90deg, #ea580c 0%, #e11d48 55%, #f59e0b 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -1401,7 +1401,7 @@
     gap: 8px;
     padding: 14px 26px;
     border-radius: 999px;
-    background: #2563eb;
+    background: #ea580c;
     color: white;
     font-weight: 800;
     font-size: 15px;
@@ -1412,7 +1412,7 @@
 }
 
 .hero-cta:hover {
-    background: #1d4ed8;
+    background: #c2410c;
     transform: translateY(-1px);
     box-shadow: 0 14px 30px rgba(37, 99, 235, 0.28);
 }
@@ -1491,7 +1491,7 @@
 
 .step.completed .step-line,
 .step.active .step-line {
-    background: #2563eb;
+    background: #ea580c;
 }
 
 .step-node {
@@ -1518,9 +1518,9 @@
 }
 
 .step.active .step-circle {
-    background: #2563eb;
+    background: #ea580c;
     color: white;
-    border-color: #2563eb;
+    border-color: #ea580c;
     box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.12);
     transform: scale(1.05);
 }
@@ -1600,8 +1600,8 @@
     border-radius: 12px;
     display: grid;
     place-items: center;
-    background: #eef2ff;
-    border: 1px solid #e0e7ff;
+    background: #fdeee2;
+    border: 1px solid #ffedd5;
     font-size: 20px;
     flex-shrink: 0;
 }
@@ -1617,7 +1617,7 @@
     font-weight: 800;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #2563eb;
+    color: #ea580c;
     margin-bottom: 2px;
 }
 
@@ -1660,7 +1660,7 @@
 
 .journey-card .form-group select {
     max-width: none;
-    background: #f8fafc;
+    background: #faf6f1;
     border-color: #e2e8f0;
     font-weight: 600;
     font-size: 14px;
@@ -1676,8 +1676,8 @@
 }
 
 .journey-card .skill-item {
-    background: #f8fafc;
-    border-color: #eef2ff;
+    background: #faf6f1;
+    border-color: #fdeee2;
 }
 
 /* Responsive Sprint 1 */
@@ -1743,7 +1743,7 @@
 }
 
 .skill-item-v2 {
-    background: #f8fafc;
+    background: #faf6f1;
     border: 1px solid #e2e8f0;
     border-radius: 14px;
     padding: 16px;
@@ -1788,7 +1788,7 @@
 }
 
 .skill-v2-current {
-    color: #2563eb;
+    color: #ea580c;
 }
 
 .skill-v2-divider {
@@ -1834,7 +1834,7 @@
 }
 
 .skill-fill-your {
-    background: linear-gradient(90deg, #2563eb, #0ea5e9);
+    background: linear-gradient(90deg, #ea580c, #0ea5e9);
 }
 
 .skill-fill-required {
@@ -1844,7 +1844,7 @@
 .skill-bar-value {
     font-weight: 700;
     text-align: right;
-    color: #2563eb;
+    color: #ea580c;
     font-size: 12px;
 }
 
@@ -1898,7 +1898,7 @@
 
 .skill-item-v2 input[type="range"] {
     width: 100%;
-    accent-color: #2563eb;
+    accent-color: #ea580c;
     margin-top: 4px;
 }
 
@@ -1939,8 +1939,8 @@
 
 /* Score card dashboard */
 .score-card-dashboard {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 60%, #eef2ff 100%);
-    border: 1px solid #e0e7ff;
+    background: linear-gradient(135deg, #ffffff 0%, #faf6f1 60%, #fdeee2 100%);
+    border: 1px solid #ffedd5;
     padding: 22px;
     gap: 22px;
 }
@@ -1950,7 +1950,7 @@
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.08em;
-    color: #2563eb;
+    color: #ea580c;
     text-transform: uppercase;
     margin-bottom: 4px;
 }
@@ -1988,7 +1988,7 @@
     align-items: center;
     padding: 12px;
     border-radius: 12px;
-    background: #f8fafc;
+    background: #faf6f1;
     border: 1px solid #f1f5f9;
 }
 
@@ -2046,7 +2046,7 @@
 }
 
 .gap-fill-your {
-    background: linear-gradient(90deg, #2563eb, #38bdf8);
+    background: linear-gradient(90deg, #ea580c, #38bdf8);
 }
 
 .gap-fill-need {
@@ -2056,7 +2056,7 @@
 .gap-value {
     font-weight: 700;
     text-align: right;
-    color: #2563eb;
+    color: #ea580c;
 }
 
 .gap-value.need {
@@ -2225,8 +2225,8 @@
 
 /* Roadmap v2 */
 .roadmap-v2 {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 60%, #f5f3ff 100%);
-    border: 1px solid #e0e7ff;
+    background: linear-gradient(135deg, #ffffff 0%, #faf6f1 60%, #f5f3ff 100%);
+    border: 1px solid #ffedd5;
 }
 
 .roadmap-header {
@@ -2324,7 +2324,7 @@
     font-weight: 800;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #7c3aed;
+    color: #e11d48;
     margin-bottom: 8px;
 }
 
@@ -2376,7 +2376,7 @@
 .alt-card {
     padding: 16px;
     border-radius: 14px;
-    background: #f8fafc;
+    background: #faf6f1;
     border: 1px solid #e2e8f0;
 }
 
@@ -2395,7 +2395,7 @@
 
 .alt-pct {
     font-weight: 800;
-    color: #2563eb;
+    color: #ea580c;
     font-size: 14px;
     white-space: nowrap;
 }
@@ -2411,7 +2411,7 @@
 .alt-fill {
     height: 100%;
     border-radius: 999px;
-    background: linear-gradient(90deg, #2563eb, #7c3aed);
+    background: linear-gradient(90deg, #ea580c, #e11d48);
     transition: width 0.8s ease;
 }
 
@@ -2501,7 +2501,7 @@
 /* How It Works — 6 steps */
 .how-section {
     padding: 48px 0 36px;
-    background: #f8fafc;
+    background: #faf6f1;
     border-top: 1px solid #e2e8f0;
     border-bottom: 1px solid #e2e8f0;
 }
@@ -2576,7 +2576,7 @@
     border-radius: 50%;
     display: grid;
     place-items: center;
-    background: #2563eb;
+    background: #ea580c;
     color: white;
     font-size: 10px;
     z-index: 1;
@@ -2618,7 +2618,7 @@
     margin: 0 auto;
     padding: 18px;
     border-radius: 16px;
-    background: #f8fafc;
+    background: #faf6f1;
     border: 1px solid #e2e8f0;
 }
 
@@ -2641,10 +2641,10 @@
     background: #0f172a;
 }
 .arch-node.frontend {
-    background: #2563eb;
+    background: #ea580c;
 }
 .arch-node.api {
-    background: #7c3aed;
+    background: #e11d48;
 }
 .arch-node.db {
     background: #0ea5e9;
@@ -2664,7 +2664,7 @@
     min-width: 260px;
 }
 .arch-node.rec {
-    background: linear-gradient(90deg, #2563eb, #7c3aed);
+    background: linear-gradient(90deg, #ea580c, #e11d48);
     min-width: 180px;
 }
 
@@ -2833,7 +2833,7 @@
     gap: 16px;
     padding: 16px 18px;
     border-radius: 14px;
-    background: linear-gradient(135deg, #eef2ff, #f0fdf4);
+    background: linear-gradient(135deg, #fdeee2, #f0fdf4);
     border: 1px solid #c7d2fe;
     margin-bottom: 16px;
     flex-wrap: wrap;
@@ -2884,7 +2884,7 @@
 }
 
 .step-dots .dot.filled {
-    background: #2563eb;
+    background: #ea580c;
 }
 
 .step-dots .dot.active {
@@ -2903,7 +2903,7 @@
 }
 
 .step.clickable:focus-visible .step-circle {
-    outline: 2px solid #2563eb;
+    outline: 2px solid #ea580c;
     outline-offset: 2px;
 }
 
@@ -2914,7 +2914,7 @@
     gap: 8px;
     padding: 10px 14px;
     border-radius: 12px;
-    background: #f8fafc;
+    background: #faf6f1;
     border: 1px solid #e2e8f0;
     margin: 10px 0;
     font-size: 13px;
@@ -2934,7 +2934,7 @@
 
 .wizard-summary em {
     margin-left: auto;
-    color: #2563eb;
+    color: #ea580c;
     font-style: normal;
     font-weight: 700;
     font-size: 12px;
@@ -2953,12 +2953,12 @@
     padding: 10px 12px;
     border: 1px solid #cbd5e1;
     border-radius: 10px;
-    background: #f8fafc;
+    background: #faf6f1;
     transition: 0.2s;
 }
 
 .searchable-input:focus-within {
-    border-color: #2563eb;
+    border-color: #ea580c;
     background: white;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
@@ -3020,16 +3020,16 @@
 .searchable-pill {
     padding: 6px 10px;
     border-radius: 999px;
-    background: #eef2ff;
-    color: #4338ca;
-    border: 1px solid #e0e7ff;
+    background: #fdeee2;
+    color: #9a3412;
+    border: 1px solid #ffedd5;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
 }
 
 .searchable-pill:hover {
-    background: #e0e7ff;
+    background: #ffedd5;
 }
 
 .searchable-option {
@@ -3048,7 +3048,7 @@
 .searchable-option:hover,
 .searchable-option.selected {
     background: #f1f5f9;
-    color: #2563eb;
+    color: #ea580c;
 }
 
 .searchable-empty {
@@ -3119,7 +3119,7 @@
 .skill-progress-fill {
     height: 100%;
     border-radius: 999px;
-    background: linear-gradient(90deg, #2563eb, #7c3aed);
+    background: linear-gradient(90deg, #ea580c, #e11d48);
     transition: width 0.5s ease;
 }
 
@@ -3164,7 +3164,7 @@
     border-radius: 8px;
     display: grid;
     place-items: center;
-    background: #f8fafc;
+    background: #faf6f1;
     border: 1px solid #e2e8f0;
     font-size: 14px;
 }
@@ -3188,7 +3188,7 @@
 }
 
 .skill-intro-inline {
-    background: #f8fafc;
+    background: #faf6f1;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 12px 14px;
@@ -3297,7 +3297,7 @@
     padding: 28px 18px;
     border: 2px dashed #cbd5e1;
     border-radius: 16px;
-    background: #f8fafc;
+    background: #faf6f1;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -3307,7 +3307,7 @@
 }
 
 .resume-dropzone-v2.drag-over {
-    border-color: #2563eb;
+    border-color: #ea580c;
     background: #eff6ff;
 }
 
@@ -3325,7 +3325,7 @@
     margin-top: 12px;
     padding: 14px;
     border-radius: 12px;
-    background: #f8fafc;
+    background: #faf6f1;
     border: 1px solid #e2e8f0;
 }
 
@@ -3346,7 +3346,7 @@
     border-radius: 8px;
     display: grid;
     place-items: center;
-    background: #eef2ff;
+    background: #fdeee2;
     font-size: 18px;
 }
 
@@ -3435,8 +3435,8 @@
 }
 
 .nav-reset:hover {
-    border-color: #2563eb;
-    color: #2563eb;
+    border-color: #ea580c;
+    color: #ea580c;
 }
 
 @media (max-width: 720px) {
@@ -3471,7 +3471,7 @@
 /* About — product not code */
 .about-section {
     padding: 48px 0;
-    background: #f8fafc;
+    background: #faf6f1;
     border-top: 1px solid #e2e8f0;
 }
 
@@ -3532,7 +3532,7 @@
 
 .about-foot {
     font-size: 13px;
-    color: #2563eb;
+    color: #ea580c;
     font-weight: 600;
     margin-top: 10px;
 }
@@ -3556,7 +3556,7 @@ button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 select:focus-visible {
-    outline: 2px solid #2563eb;
+    outline: 2px solid #ea580c;
     outline-offset: 2px;
 }
 
@@ -3603,7 +3603,7 @@ select:focus-visible {
     gap: 12px;
     margin-top: 22px;
     padding: 14px;
-    background: #f8fafc;
+    background: #faf6f1;
     border: 1px solid #e2e8f0;
     border-radius: 14px;
 }
@@ -3641,7 +3641,7 @@ select:focus-visible {
 }
 
 .skills-search:focus {
-    border-color: #2563eb;
+    border-color: #ea580c;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
@@ -3686,7 +3686,7 @@ select:focus-visible {
 }
 
 .skills-filter-select:focus {
-    border-color: #2563eb;
+    border-color: #ea580c;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
@@ -3731,7 +3731,7 @@ select:focus-visible {
     gap: 10px;
     padding: 12px 16px;
     border: none;
-    background: #f8fafc;
+    background: #faf6f1;
     color: #0f172a;
     cursor: pointer;
     text-align: left;
@@ -3754,7 +3754,7 @@ select:focus-visible {
     place-items: center;
     flex-shrink: 0;
     border-radius: 9px;
-    background: #eef2ff;
+    background: #fdeee2;
     font-size: 16px;
 }
 
@@ -3767,7 +3767,7 @@ select:focus-visible {
 }
 
 .skill-group-progress {
-    color: #2563eb;
+    color: #ea580c;
     font-size: 12px;
     font-weight: 700;
 }
@@ -3823,7 +3823,7 @@ select:focus-visible {
     text-align: center;
     border: 1px dashed #cbd5e1;
     border-radius: 16px;
-    background: #f8fafc;
+    background: #faf6f1;
 }
 
 .skills-empty-icon {
@@ -3833,7 +3833,7 @@ select:focus-visible {
     display: grid;
     place-items: center;
     border-radius: 14px;
-    background: #eef2ff;
+    background: #fdeee2;
     font-size: 22px;
 }
 
@@ -3860,7 +3860,7 @@ select:focus-visible {
     padding: 16px;
     border: 1px solid #e2e8f0;
     border-radius: 14px;
-    background: #f8fafc;
+    background: #faf6f1;
 }
 
 .top-priority-preview h4 {
@@ -3914,14 +3914,14 @@ select:focus-visible {
 
 .not-familiar-btn:hover {
     border-color: #94a3b8;
-    background: #f8fafc;
+    background: #faf6f1;
     color: #334155;
 }
 
 .not-familiar-btn.active {
     border-color: #bfdbfe;
     background: #eff6ff;
-    color: #2563eb;
+    color: #ea580c;
 }
 
 
@@ -4102,7 +4102,7 @@ select:focus-visible {
     gap: 11px;
     padding: 14px;
     text-align: left;
-    background: #f8fafc;
+    background: #faf6f1;
     border: 1px solid #e2e8f0;
     border-radius: 13px;
     transition:
@@ -4238,12 +4238,12 @@ select:focus-visible {
 }
 
 .career-search-wrapper input:focus {
-    border-color: #2563eb;
+    border-color: #ea580c;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .career-search-wrapper input:disabled {
-    background: #f8fafc;
+    background: #faf6f1;
     cursor: not-allowed;
 }
 
@@ -4301,7 +4301,7 @@ select:focus-visible {
     display: grid;
     place-items: center;
     border-radius: 9px;
-    background: #2563eb;
+    background: #ea580c;
     color: white;
     font-weight: 800;
 }
@@ -4332,7 +4332,7 @@ select:focus-visible {
 .change-career-button {
     border: none;
     background: transparent;
-    color: #2563eb;
+    color: #ea580c;
     font-size: 12px;
     font-weight: 800;
     cursor: pointer;
@@ -4366,7 +4366,7 @@ select:focus-visible {
     gap: 10px;
     padding: 11px 14px;
     border-bottom: 1px solid #e2e8f0;
-    background: #f8fafc;
+    background: #faf6f1;
     color: #64748b;
     font-size: 11px;
     font-weight: 700;
@@ -4388,7 +4388,7 @@ select:focus-visible {
 }
 
 .career-results-list::-webkit-scrollbar-track {
-    background: #f8fafc;
+    background: #faf6f1;
 }
 
 
@@ -4414,7 +4414,7 @@ select:focus-visible {
 }
 
 .career-option:hover {
-    background: #f8fafc;
+    background: #faf6f1;
     border-color: #e2e8f0;
 }
 
@@ -4465,7 +4465,7 @@ select:focus-visible {
 
 .career-option-check {
     flex-shrink: 0;
-    color: #2563eb;
+    color: #ea580c;
     font-size: 16px;
     font-weight: 900;
 }
@@ -4501,7 +4501,7 @@ select:focus-visible {
 .career-empty button {
     border: none;
     background: transparent;
-    color: #2563eb;
+    color: #ea580c;
     font-size: 12px;
     font-weight: 800;
     cursor: pointer;
@@ -4519,7 +4519,7 @@ select:focus-visible {
     margin-top: 7px;
     border: 1px solid #e2e8f0;
     border-radius: 10px;
-    background: #f8fafc;
+    background: #faf6f1;
     color: #64748b;
     font-size: 11px;
 }
@@ -4559,4 +4559,259 @@ select:focus-visible {
     .selected-career-preview {
         padding: 10px 11px;
     }
+}
+
+/* =====================================================
+   P1-P5 UPGRADES — engine breakdown, why-card, learning
+   order, career ranking, demo button, resume career recs
+===================================================== */
+
+.hero-demo {
+    margin-top: 14px;
+    margin-left: 12px;
+    padding: 14px 26px;
+    border-radius: 12px;
+    border: 2px solid #ea580c;
+    background: transparent;
+    color: #ea580c;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.hero-demo:hover {
+    background: #ffedd5;
+    transform: translateY(-1px);
+}
+
+.why-card {
+    margin-bottom: 20px;
+}
+
+.why-explanation {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #1c1917;
+    margin-bottom: 16px;
+}
+
+.score-breakdown {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 14px;
+}
+
+.score-breakdown-title {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 10px;
+}
+
+.breakdown-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.breakdown-label {
+    flex: 0 0 180px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.breakdown-label em {
+    display: block;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.breakdown-track {
+    flex: 1;
+    height: 8px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    overflow: hidden;
+}
+
+.breakdown-fill {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #ea580c, #f59e0b);
+}
+
+.breakdown-value {
+    flex: 0 0 46px;
+    text-align: right;
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.breakdown-missing .breakdown-fill {
+    background: #e2e8f0;
+}
+
+.breakdown-missing .breakdown-value,
+.breakdown-missing .breakdown-label {
+    color: #94a3b8;
+}
+
+.learning-order-card {
+    margin-bottom: 20px;
+}
+
+.learning-order-list {
+    list-style: none;
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.learning-order-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #faf6f1;
+}
+
+.learning-order-step {
+    flex: 0 0 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #ea580c;
+    color: white;
+    font-weight: 800;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.learning-order-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.learning-order-main strong {
+    display: block;
+    font-size: 14px;
+    color: #0f172a;
+}
+
+.learning-order-main small {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.rank-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    margin-right: 6px;
+    border-radius: 8px;
+    background: #ffedd5;
+    color: #9a3412;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.resume-career-recs {
+    margin-top: 20px;
+}
+
+@media (max-width: 640px) {
+    .breakdown-label {
+        flex-basis: 130px;
+    }
+    .hero-demo {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+/* =====================================================
+   COMPACT SKILL CARDS (review fix #5) — keep the info,
+   halve the height
+===================================================== */
+
+.skills-rater .skill-item-v2 {
+    padding: 12px 16px 10px;
+    border-radius: 12px;
+}
+
+.skills-rater .skill-v2-header {
+    margin-bottom: 6px;
+}
+
+.skills-rater .skill-bar-row {
+    margin-bottom: 4px;
+}
+
+.skills-rater .skill-bar-row + .skill-bar-row {
+    margin-bottom: 6px;
+}
+
+.skills-rater .skill-item-v2 input[type="range"] {
+    margin: 6px 0 2px;
+    display: block;
+    width: 100%;
+}
+
+.skills-rater .skill-item-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 4px;
+    min-height: 26px;
+}
+
+/* status pill in the card header */
+.skill-v2-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.skill-v2-status.status-ready {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.skill-v2-status.status-low {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.skill-v2-status.status-medium {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+.skill-v2-status.status-high {
+    background: #ffedd5;
+    color: #9a3412;
+}
+
+.skill-v2-status.status-critical {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.skills-rater .not-familiar-btn {
+    padding: 4px 10px;
+    font-size: 12px;
 }

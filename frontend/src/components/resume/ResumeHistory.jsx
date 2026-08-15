@@ -55,7 +55,7 @@ export default function ResumeHistory({ onReload = () => {}, refreshKey = 0 }) {
                             <button
                                 type="button"
                                 onClick={() => setCollapsed((v) => !v)}
-                                style={{ background: "none", border: "none", color: "#2563eb", fontWeight: 700, cursor: "pointer", padding: 0, fontSize: 12 }}
+                                style={{ background: "none", border: "none", color: "#ea580c", fontWeight: 700, cursor: "pointer", padding: 0, fontSize: 12 }}
                             >
                                 {collapsed ? "Expand" : "Collapse"}
                             </button>

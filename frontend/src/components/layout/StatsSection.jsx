@@ -25,10 +25,11 @@ export default function StatsSection() {
 
     const items = stats
         ? [
-              { value: `${stats.skills}+`, label: "Skills", sub: "for your goals" },
-              { value: `${stats.careers}+`, label: "Career Paths", sub: "to explore" },
-              { value: `${stats.domains}+`, label: "Domains", sub: "career fields" },
-              { value: `${stats.education_programs}+`, label: "Programs", sub: "learning paths" },
+              // Exact live counts from /api/statistics — never hardcoded
+              { value: `${stats.skills}`, label: "Skills", sub: "in the database" },
+              { value: `${stats.careers}`, label: "Career Paths", sub: "to explore" },
+              { value: `${stats.domains}`, label: "Domains", sub: "career fields" },
+              { value: `${stats.education_programs}`, label: "Programs", sub: "learning paths" },
           ]
         : [
               { value: "—", label: "Skills", sub: "loading options" },
