@@ -54,16 +54,21 @@ app = FastAPI(
 )
 from fastapi.middleware.cors import CORSMiddleware
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        # Local development
         "http://localhost:5173",
         "http://localhost:5174",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
-        "https://ai-skill-gap-analyser-l82e-cgu8f3pf0-tushar-6a84.vercel.app",
+
+        # Vercel production
+        "https://ai-skill-gap-analyser-l82e-mtbck0h5d-tushar-6a84.vercel.app",
     ],
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
